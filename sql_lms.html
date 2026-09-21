@@ -1,0 +1,1929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SQL Academy LMS</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0d14;--surface:#111520;--card:#181d2e;--card2:#1e2438;
+  --accent:#4f8ef7;--accent2:#7c5cbf;--green:#22c55e;--yellow:#eab308;
+  --red:#ef4444;--orange:#f97316;--cyan:#06b6d4;
+  --text:#e2e8f0;--muted:#64748b;--muted2:#94a3b8;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --code:#0d1117;--radius:12px;
+}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:15px;line-height:1.6;min-height:100vh}
+a{color:var(--accent);text-decoration:none}
+button{cursor:pointer;font-family:inherit}
+input,select{font-family:inherit}
+
+/* ===== LOGIN PAGE ===== */
+#loginPage{display:flex;min-height:100vh;align-items:center;justify-content:center;background:var(--bg);position:relative;overflow:hidden}
+#loginPage::before{content:'';position:absolute;width:600px;height:600px;background:radial-gradient(circle,rgba(79,142,247,0.08) 0%,transparent 70%);top:-100px;left:-100px;pointer-events:none}
+#loginPage::after{content:'';position:absolute;width:400px;height:400px;background:radial-gradient(circle,rgba(124,92,191,0.08) 0%,transparent 70%);bottom:-50px;right:-50px;pointer-events:none}
+.login-box{background:var(--card);border:1px solid var(--border2);border-radius:20px;padding:48px 44px;width:100%;max-width:420px;position:relative;z-index:1}
+.login-logo{text-align:center;margin-bottom:32px}
+.login-logo .logo-icon{width:64px;height:64px;background:linear-gradient(135deg,#4f8ef7,#7c5cbf);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 12px}
+.login-logo h1{font-size:24px;font-weight:700;color:var(--text)}
+.login-logo p{color:var(--muted2);font-size:13px;margin-top:4px}
+.form-group{margin-bottom:18px}
+.form-group label{display:block;font-size:13px;font-weight:600;color:var(--muted2);margin-bottom:6px}
+.form-group input{width:100%;padding:11px 14px;background:var(--bg);border:1px solid var(--border2);border-radius:9px;color:var(--text);font-size:14px;outline:none;transition:border-color .2s}
+.form-group input:focus{border-color:var(--accent)}
+.btn-login{width:100%;padding:13px;background:linear-gradient(135deg,#4f8ef7,#7c5cbf);border:none;border-radius:10px;color:white;font-size:15px;font-weight:700;transition:opacity .2s;margin-top:6px}
+.btn-login:hover{opacity:.9}
+.login-tabs{display:flex;gap:4px;background:var(--bg);border-radius:10px;padding:4px;margin-bottom:24px}
+.login-tab{flex:1;padding:8px;border:none;background:transparent;color:var(--muted2);font-size:13px;font-weight:600;border-radius:7px;transition:all .2s}
+.login-tab.active{background:var(--card2);color:var(--text)}
+.login-error{color:var(--red);font-size:13px;margin-top:8px;text-align:center;display:none}
+.login-demo{margin-top:20px;padding:14px;background:rgba(79,142,247,0.08);border:1px solid rgba(79,142,247,0.2);border-radius:9px}
+.login-demo p{font-size:12px;color:var(--muted2);margin-bottom:6px}
+.login-demo code{font-size:12px;color:var(--accent);display:block;line-height:1.8}
+
+/* ===== APP SHELL ===== */
+#app{display:none;min-height:100vh}
+.app-header{background:var(--card);border-bottom:1px solid var(--border);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200}
+.header-logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px}
+.header-logo .logo-sq{width:32px;height:32px;background:linear-gradient(135deg,#4f8ef7,#7c5cbf);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px}
+.header-nav{display:flex;gap:4px}
+.hnav-btn{padding:7px 14px;border:none;background:transparent;color:var(--muted2);font-size:13px;font-weight:500;border-radius:8px;transition:all .2s}
+.hnav-btn:hover{background:var(--card2);color:var(--text)}
+.hnav-btn.active{background:rgba(79,142,247,0.15);color:var(--accent)}
+.header-user{display:flex;align-items:center;gap:10px}
+.user-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#4f8ef7,#7c5cbf);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:white}
+.user-name{font-size:13px;color:var(--muted2)}
+.btn-logout{padding:6px 14px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.25);border-radius:7px;color:var(--red);font-size:12px;font-weight:600;transition:all .2s}
+.btn-logout:hover{background:rgba(239,68,68,0.2)}
+
+/* ===== SIDEBAR ===== */
+.app-body{display:flex;min-height:calc(100vh - 60px)}
+.sidebar{width:240px;background:var(--surface);border-right:1px solid var(--border);padding:16px 10px;position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto;flex-shrink:0;scrollbar-width:thin;scrollbar-color:var(--border2) transparent}
+.sb-section-label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);padding:10px 8px 6px;margin-top:8px}
+.sb-item{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:9px;font-size:13px;color:var(--muted2);cursor:pointer;transition:all .15s;margin-bottom:1px;border:none;background:transparent;width:100%;text-align:left}
+.sb-item:hover{background:var(--card);color:var(--text)}
+.sb-item.active{background:rgba(79,142,247,0.12);color:var(--accent)}
+.sb-item.done .sb-check{color:var(--green)}
+.sb-check{font-size:14px;flex-shrink:0;width:18px;height:18px;border:1.5px solid var(--border2);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .2s}
+.sb-check.done{background:var(--green);border-color:var(--green);color:#0a0d14}
+.sb-progress{padding:16px 10px;border-top:1px solid var(--border);margin-top:8px}
+.sb-prog-label{font-size:12px;color:var(--muted2);margin-bottom:6px;display:flex;justify-content:space-between}
+.prog-bar-wrap{height:6px;background:var(--border2);border-radius:99px;overflow:hidden}
+.prog-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:99px;transition:width .5s}
+
+/* ===== MAIN CONTENT ===== */
+.main-content{flex:1;overflow:hidden;min-width:0}
+.page{display:none;padding:28px 32px;animation:fadeIn .2s ease}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* ===== DASHBOARD ===== */
+.dash-greeting{margin-bottom:28px}
+.dash-greeting h1{font-size:26px;font-weight:800;color:var(--text)}
+.dash-greeting p{color:var(--muted2);margin-top:4px}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px}
+.stat-card .stat-label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+.stat-card .stat-val{font-size:28px;font-weight:800;color:var(--text)}
+.stat-card .stat-sub{font-size:12px;color:var(--muted2);margin-top:3px}
+.stat-icon{font-size:24px;margin-bottom:8px}
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:28px}
+.dash-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px}
+.dash-card h3{font-size:14px;font-weight:700;color:var(--text);margin-bottom:14px}
+.topic-progress-item{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.tpi-name{font-size:13px;color:var(--muted2);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tpi-bar-wrap{width:100px;height:6px;background:var(--border2);border-radius:99px;overflow:hidden}
+.tpi-bar{height:100%;border-radius:99px;transition:width .5s}
+.tpi-pct{font-size:12px;color:var(--muted);min-width:32px;text-align:right}
+.activity-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.activity-item:last-child{border-bottom:none}
+.act-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.act-text{flex:1;color:var(--muted2)}
+.act-time{font-size:11px;color:var(--muted)}
+.recent-users-table{width:100%;border-collapse:collapse;font-size:13px}
+.recent-users-table th{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.6px;padding:6px 8px;text-align:left;border-bottom:1px solid var(--border)}
+.recent-users-table td{padding:8px;color:var(--muted2);border-bottom:1px solid rgba(255,255,255,.03)}
+.status-badge{display:inline-flex;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600}
+.badge-online{background:rgba(34,197,94,.12);color:var(--green)}
+.badge-offline{background:rgba(100,116,139,.12);color:var(--muted2)}
+.badge-easy{background:rgba(34,197,94,.12);color:var(--green)}
+.badge-med{background:rgba(234,179,8,.12);color:var(--yellow)}
+.badge-hard{background:rgba(239,68,68,.12);color:var(--red)}
+
+/* ===== LESSON PAGE ===== */
+.lesson-header{margin-bottom:24px}
+.lesson-header h1{font-size:24px;font-weight:800}
+.lesson-header p{color:var(--muted2);margin-top:5px;max-width:700px}
+.topic-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px}
+.topic-tab{padding:8px 16px;border:1px solid var(--border2);border-radius:8px;background:transparent;color:var(--muted2);font-size:13px;font-weight:500;transition:all .2s}
+.topic-tab:hover{background:var(--card);color:var(--text)}
+.topic-tab.active{background:var(--accent);border-color:var(--accent);color:white}
+.topic-tab.completed{border-color:var(--green);color:var(--green)}
+.lesson-body{display:none}
+.lesson-body.active{display:block}
+
+/* ===== CONCEPT CARDS ===== */
+.concept-section{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:20px;overflow:hidden}
+.concept-header{padding:18px 22px;display:flex;align-items:center;gap:12px;cursor:pointer}
+.concept-header h2{font-size:16px;font-weight:700;flex:1}
+.concept-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.concept-toggle{color:var(--muted);transition:transform .25s;font-size:18px}
+.concept-body{padding:0 22px 22px;border-top:1px solid var(--border)}
+.concept-body.hidden{display:none}
+.concept-toggle.open{transform:rotate(90deg)}
+
+.tabs-bar{display:flex;gap:3px;background:var(--card2);border-radius:9px;padding:3px;margin:14px 0 0}
+.tab-btn{padding:7px 13px;border:none;background:transparent;color:var(--muted);font-size:13px;font-weight:500;border-radius:7px;transition:all .2s}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{background:var(--surface);color:var(--text)}
+.tab-pane{display:none;padding-top:2px}
+.tab-pane.active{display:block}
+
+/* ===== CODE BLOCKS ===== */
+pre{background:var(--code);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:16px 18px;overflow-x:auto;margin:12px 0;font-size:13px;line-height:1.75;font-family:'Fira Code','Cascadia Code','Consolas',monospace}
+.kw{color:#c792ea;font-weight:600}
+.fn{color:#82aaff}
+.str{color:#c3e88d}
+.num{color:#f78c6c}
+.cm{color:#546e7a;font-style:italic}
+.col{color:#ffcb6b}
+
+/* ===== TABLES ===== */
+.sql-table-wrap{overflow-x:auto;margin:12px 0;border-radius:9px;border:1px solid var(--border2)}
+table.sql-table{width:100%;border-collapse:collapse;font-size:13px}
+table.sql-table th{background:var(--card2);color:var(--accent);padding:9px 14px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.6px;white-space:nowrap}
+table.sql-table td{padding:8px 14px;border-top:1px solid var(--border);color:var(--text)}
+table.sql-table tr:hover td{background:rgba(79,142,247,.04)}
+.table-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin:14px 0 4px;display:flex;align-items:center;gap:6px}
+.table-label::before{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ===== INFO BOXES ===== */
+.info-box{border-radius:10px;padding:14px 16px;margin:12px 0}
+.info-box.tip{background:rgba(79,142,247,.08);border:1px solid rgba(79,142,247,.22)}
+.info-box.tip h4{color:var(--accent);font-size:13px;font-weight:700;margin-bottom:5px}
+.info-box.tip p,.info-box.tip li{color:#93c5fd;font-size:13px;line-height:1.7}
+.info-box.success{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2)}
+.info-box.success h4{color:var(--green);font-size:13px;font-weight:700;margin-bottom:5px}
+.info-box.success p,.info-box.success li{color:#86efac;font-size:13px;line-height:1.7}
+.info-box.warn{background:rgba(234,179,8,.07);border:1px solid rgba(234,179,8,.2)}
+.info-box.warn h4{color:var(--yellow);font-size:13px;font-weight:700;margin-bottom:5px}
+.info-box.warn p{color:#fde68a;font-size:13px;line-height:1.7}
+.info-box.int{background:rgba(124,92,191,.08);border:1px solid rgba(124,92,191,.25)}
+.info-box.int h4{color:#a78bfa;font-size:13px;font-weight:700;margin-bottom:5px}
+.info-box.int p,.info-box.int li{color:#c4b5fd;font-size:13px;line-height:1.7}
+.card-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
+.mini-card{background:var(--card2);border:1px solid var(--border);border-radius:9px;padding:12px 14px}
+.mini-card h4{font-size:12px;color:var(--muted2);margin-bottom:5px;text-transform:uppercase;letter-spacing:.6px}
+.mini-card p{font-size:13px;color:var(--text)}
+h3{font-size:15px;font-weight:700;color:var(--text);margin:16px 0 8px}
+p{color:var(--muted2);font-size:14px;margin-bottom:8px;line-height:1.75}
+ul,ol{padding-left:18px}
+li{color:var(--muted2);font-size:14px;margin-bottom:4px;line-height:1.7}
+li strong{color:var(--text)}
+
+/* ===== PRACTICE QUESTIONS ===== */
+.practice-header{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.practice-header h1{font-size:22px;font-weight:800;flex:1}
+.filter-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.filter-btn{padding:6px 14px;border:1px solid var(--border2);border-radius:7px;background:transparent;color:var(--muted2);font-size:12px;font-weight:600;transition:all .2s}
+.filter-btn:hover{background:var(--card);color:var(--text)}
+.filter-btn.active{background:var(--accent);border-color:var(--accent);color:white}
+.question-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:14px;overflow:hidden}
+.qcard-header{padding:16px 20px;cursor:pointer;display:flex;align-items:flex-start;gap:12px}
+.qcard-header:hover{background:rgba(255,255,255,.02)}
+.q-num-badge{background:var(--card2);border:1px solid var(--border2);border-radius:7px;padding:3px 9px;font-size:12px;font-weight:700;color:var(--accent);white-space:nowrap;flex-shrink:0}
+.q-text{flex:1;font-size:14px;color:var(--text);font-weight:500}
+.q-meta{display:flex;gap:6px;align-items:center;flex-shrink:0}
+.q-toggle{color:var(--muted);font-size:16px;transition:transform .2s;flex-shrink:0}
+.qcard-body{display:none;border-top:1px solid var(--border);padding:16px 20px}
+.qcard-body.open{display:block}
+.q-toggle.open{transform:rotate(90deg)}
+.schema-note{background:rgba(6,182,212,.07);border:1px solid rgba(6,182,212,.2);border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#67e8f9}
+.schema-note strong{color:var(--cyan)}
+
+/* ===== TRACKER ===== */
+.tracker-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+.tracker-topic-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;cursor:pointer;transition:border-color .2s}
+.tracker-topic-card:hover{border-color:var(--border2)}
+.tracker-topic-card.done{border-color:rgba(34,197,94,.3)}
+.ttc-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.ttc-icon{font-size:20px}
+.ttc-name{font-size:14px;font-weight:700;color:var(--text);flex:1}
+.ttc-badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px}
+.ttc-prog-bar{height:5px;background:var(--border2);border-radius:99px;overflow:hidden;margin-bottom:6px}
+.ttc-prog-fill{height:100%;border-radius:99px;transition:width .5s}
+.ttc-stats{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.heatmap-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;margin-bottom:20px}
+.heatmap-wrap h3{font-size:14px;font-weight:700;margin-bottom:14px}
+.heatmap{display:grid;grid-template-columns:repeat(26,1fr);gap:3px}
+.hm-cell{aspect-ratio:1;border-radius:3px;background:var(--border);cursor:pointer;transition:background .2s}
+.hm-cell.l1{background:rgba(79,142,247,.25)}
+.hm-cell.l2{background:rgba(79,142,247,.5)}
+.hm-cell.l3{background:rgba(79,142,247,.75)}
+.hm-cell.l4{background:var(--accent)}
+.achiev-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.achiev-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center;transition:border-color .2s}
+.achiev-card.unlocked{border-color:rgba(234,179,8,.3)}
+.achiev-card .ach-icon{font-size:28px;margin-bottom:8px;filter:grayscale(1);opacity:.4}
+.achiev-card.unlocked .ach-icon{filter:none;opacity:1}
+.achiev-card .ach-name{font-size:12px;font-weight:700;color:var(--muted2)}
+.achiev-card.unlocked .ach-name{color:var(--yellow)}
+.achiev-card .ach-desc{font-size:11px;color:var(--muted);margin-top:3px}
+
+/* ===== USERS PAGE ===== */
+.users-table-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.users-table{width:100%;border-collapse:collapse;font-size:13px}
+.users-table th{background:var(--card2);color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.6px;padding:12px 16px;text-align:left}
+.users-table td{padding:12px 16px;border-top:1px solid var(--border);color:var(--muted2)}
+.online-dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;margin-right:5px;box-shadow:0 0 0 2px rgba(34,197,94,.2)}
+.offline-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block;margin-right:5px}
+.xp-bar{display:flex;align-items:center;gap:8px}
+.xp-fill{height:5px;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:99px}
+.users-table-wrap{overflow-x:auto}
+
+/* ===== NUMERIC FUNCTIONS ===== */
+.func-category{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:18px;overflow:hidden}
+.func-cat-header{padding:16px 20px;display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:700;font-size:15px}
+.func-cat-body{padding:0 20px 20px;border-top:1px solid var(--border)}
+.func-row{display:grid;grid-template-columns:150px 1fr 200px;gap:12px;align-items:start;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.func-row:last-child{border-bottom:none}
+.func-name{font-family:monospace;font-size:13px;color:var(--cyan);font-weight:700}
+.func-desc{font-size:13px;color:var(--muted2)}
+.func-example{font-family:monospace;font-size:12px;color:var(--str);background:var(--code);padding:4px 8px;border-radius:5px;word-break:break-all}
+
+@media(max-width:900px){
+  .sidebar{display:none}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .dash-grid{grid-template-columns:1fr}
+  .tracker-grid{grid-template-columns:1fr 1fr}
+  .card-grid-2{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+  .page{padding:16px}
+  .stats-grid{grid-template-columns:1fr}
+  .achiev-grid{grid-template-columns:1fr 1fr}
+  .func-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN PAGE ============ -->
+<div id="loginPage">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="logo-icon">🗄️</div>
+      <h1>SQL Academy</h1>
+      <p>The complete SQL learning management system</p>
+    </div>
+    <div class="login-tabs">
+      <button class="login-tab active" onclick="switchAuthTab('login')">Sign in</button>
+      <button class="login-tab" onclick="switchAuthTab('register')">Register</button>
+    </div>
+    <div id="loginForm">
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="loginUser" placeholder="Enter username" value="admin">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="loginPass" placeholder="Enter password" value="admin123">
+      </div>
+      <button class="btn-login" onclick="doLogin()">Sign in to Academy</button>
+      <div class="login-error" id="loginErr">Invalid username or password.</div>
+    </div>
+    <div id="registerForm" style="display:none">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="regName" placeholder="Your full name">
+      </div>
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="regUser" placeholder="Choose a username">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="regPass" placeholder="Choose a password">
+      </div>
+      <button class="btn-login" onclick="doRegister()">Create Account</button>
+      <div class="login-error" id="regErr"></div>
+    </div>
+    <div class="login-demo">
+      <p>Demo credentials:</p>
+      <code>admin / admin123 (Instructor)</code>
+      <code>student / sql2024 (Student)</code>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APP SHELL ============ -->
+<div id="app">
+  <header class="app-header">
+    <div class="header-logo">
+      <div class="logo-sq">🗄️</div>
+      SQL Academy
+    </div>
+    <nav class="header-nav">
+      <button class="hnav-btn active" onclick="showPage('dashboard')">Dashboard</button>
+      <button class="hnav-btn" onclick="showPage('lessons')">Lessons</button>
+      <button class="hnav-btn" onclick="showPage('practice')">Practice</button>
+      <button class="hnav-btn" onclick="showPage('numfunctions')">SQL Functions</button>
+      <button class="hnav-btn" onclick="showPage('tracker')">My Progress</button>
+      <button class="hnav-btn admin-only" onclick="showPage('users')" style="display:none">Users</button>
+    </nav>
+    <div class="header-user">
+      <div class="user-avatar" id="userAvatar">U</div>
+      <span class="user-name" id="userName">User</span>
+      <button class="btn-logout" onclick="doLogout()">Sign out</button>
+    </div>
+  </header>
+
+  <div class="app-body">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sb-section-label">Fundamentals</div>
+      <button class="sb-item active" onclick="goLesson('intro')"><div class="sb-check" id="chk-intro"></div>SQL Introduction</button>
+      <button class="sb-item" onclick="goLesson('ddl')"><div class="sb-check" id="chk-ddl"></div>DDL</button>
+      <button class="sb-item" onclick="goLesson('dml')"><div class="sb-check" id="chk-dml"></div>DML</button>
+      <button class="sb-item" onclick="goLesson('select')"><div class="sb-check" id="chk-select"></div>SELECT & Filter</button>
+      <button class="sb-item" onclick="goLesson('joins')"><div class="sb-check" id="chk-joins"></div>JOINs</button>
+      <div class="sb-section-label">Intermediate</div>
+      <button class="sb-item" onclick="goLesson('aggregates')"><div class="sb-check" id="chk-aggregates"></div>Aggregates</button>
+      <button class="sb-item" onclick="goLesson('subqueries')"><div class="sb-check" id="chk-subqueries"></div>Subqueries & CTEs</button>
+      <button class="sb-item" onclick="goLesson('indexes')"><div class="sb-check" id="chk-indexes"></div>Indexes</button>
+      <button class="sb-item" onclick="goLesson('views')"><div class="sb-check" id="chk-views"></div>Views</button>
+      <button class="sb-item" onclick="goLesson('transactions')"><div class="sb-check" id="chk-transactions"></div>Transactions & ACID</button>
+      <div class="sb-section-label">Advanced</div>
+      <button class="sb-item" onclick="goLesson('windowfn')"><div class="sb-check" id="chk-windowfn"></div>Window Functions</button>
+      <button class="sb-item" onclick="goLesson('stored')"><div class="sb-check" id="chk-stored"></div>Stored Procedures</button>
+      <button class="sb-item" onclick="goLesson('triggers')"><div class="sb-check" id="chk-triggers"></div>Triggers</button>
+      <button class="sb-item" onclick="goLesson('normalization')"><div class="sb-check" id="chk-normalization"></div>Normalization</button>
+      <button class="sb-item" onclick="goLesson('optimization')"><div class="sb-check" id="chk-optimization"></div>Query Optimization</button>
+      <div class="sb-progress">
+        <div class="sb-prog-label"><span>Overall Progress</span><span id="sbProgPct">0%</span></div>
+        <div class="prog-bar-wrap"><div class="prog-bar" id="sbProgBar" style="width:0%"></div></div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+
+      <!-- ===== DASHBOARD ===== -->
+      <div class="page active" id="page-dashboard">
+        <div class="dash-greeting">
+          <h1 id="dashGreeting">Welcome back!</h1>
+          <p>Continue your SQL journey. You're making great progress.</p>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-icon">📚</div><div class="stat-label">Lessons completed</div><div class="stat-val" id="statLessons">0</div><div class="stat-sub">of 15 total</div></div>
+          <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-label">Questions solved</div><div class="stat-val" id="statQuestions">0</div><div class="stat-sub">Practice questions</div></div>
+          <div class="stat-card"><div class="stat-icon">🔥</div><div class="stat-label">Day streak</div><div class="stat-val" id="statStreak">1</div><div class="stat-sub">Keep it up!</div></div>
+          <div class="stat-card"><div class="stat-icon">⭐</div><div class="stat-label">XP earned</div><div class="stat-val" id="statXP">0</div><div class="stat-sub">Experience points</div></div>
+        </div>
+        <div class="dash-grid">
+          <div class="dash-card">
+            <h3>Topic progress</h3>
+            <div id="topicProgressList"></div>
+          </div>
+          <div class="dash-card">
+            <h3>Recent activity</h3>
+            <div id="activityFeed">
+              <div class="activity-item"><div class="act-icon" style="background:rgba(79,142,247,.1)">📖</div><div class="act-text">Enrolled in SQL Academy</div><div class="act-time">Today</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="dash-card admin-only" id="adminPanel" style="display:none">
+          <h3>Active users</h3>
+          <table class="recent-users-table" id="activeUsersTable">
+            <thead><tr><th>User</th><th>Role</th><th>Status</th><th>Progress</th><th>Last seen</th></tr></thead>
+            <tbody id="activeUsersTbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ===== LESSONS ===== -->
+      <div class="page" id="page-lessons">
+        <div class="lesson-header">
+          <h1>SQL Lessons</h1>
+          <p>Master every SQL concept from fundamentals to advanced — with clear explanations, syntax, tables, and interview tips.</p>
+        </div>
+        <div class="topic-tabs" id="lessonTopicTabs"></div>
+        <div id="lessonContent"></div>
+      </div>
+
+      <!-- ===== PRACTICE ===== -->
+      <div class="page" id="page-practice">
+        <div class="practice-header">
+          <h1>Practice Questions</h1>
+          <span id="practiceCount" style="font-size:13px;color:var(--muted2)"></span>
+        </div>
+        <div class="filter-bar">
+          <button class="filter-btn active" onclick="filterQ('all',this)">All</button>
+          <button class="filter-btn" onclick="filterQ('easy',this)">Easy</button>
+          <button class="filter-btn" onclick="filterQ('medium',this)">Medium</button>
+          <button class="filter-btn" onclick="filterQ('hard',this)">Hard</button>
+          <button class="filter-btn" onclick="filterQ('intro',this)">Intro</button>
+          <button class="filter-btn" onclick="filterQ('ddl',this)">DDL</button>
+          <button class="filter-btn" onclick="filterQ('select',this)">SELECT</button>
+          <button class="filter-btn" onclick="filterQ('joins',this)">JOINs</button>
+          <button class="filter-btn" onclick="filterQ('aggregates',this)">Aggregates</button>
+          <button class="filter-btn" onclick="filterQ('window',this)">Window Fn</button>
+        </div>
+        <div id="questionsList"></div>
+      </div>
+
+      <!-- ===== NUMERIC FUNCTIONS ===== -->
+      <div class="page" id="page-numfunctions">
+        <div class="lesson-header">
+          <h1>SQL Numeric Functions — 100 Questions</h1>
+          <p>Complete reference of SQL numeric functions with examples, explanations, and 100 practice questions with sample tables.</p>
+        </div>
+        <div id="numFuncContent"></div>
+      </div>
+
+      <!-- ===== TRACKER ===== -->
+      <div class="page" id="page-tracker">
+        <div class="lesson-header">
+          <h1>My Progress Tracker</h1>
+          <p>Track your SQL mastery across every topic, view your activity heatmap, and unlock achievements.</p>
+        </div>
+        <div class="tracker-grid" id="trackerGrid"></div>
+        <div class="heatmap-wrap">
+          <h3>Activity heatmap — last 26 weeks</h3>
+          <div class="heatmap" id="heatmap"></div>
+        </div>
+        <div class="lesson-header" style="margin-top:8px"><h1 style="font-size:18px">Achievements</h1></div>
+        <div class="achiev-grid" id="achievGrid"></div>
+      </div>
+
+      <!-- ===== USERS (Admin) ===== -->
+      <div class="page" id="page-users">
+        <div class="lesson-header">
+          <h1>User Management</h1>
+          <p>View all registered users, their progress, and online status.</p>
+        </div>
+        <div class="users-table-wrap">
+          <table class="users-table">
+            <thead><tr><th>Name</th><th>Role</th><th>Status</th><th>Progress</th><th>Questions solved</th><th>XP</th><th>Last active</th></tr></thead>
+            <tbody id="usersTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ======================================================
+// SUPABASE INITIALIZATION
+// ======================================================
+const SUPABASE_URL = 'REPLACE_WITH_YOUR_SUPABASE_URL';
+const SUPABASE_KEY = 'REPLACE_WITH_YOUR_SUPABASE_ANON_KEY';
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ======================================================
+// DATA & STATE
+// ======================================================
+let currentUser = null;
+let appState = { users: {}, sessions: [] };
+
+async function loadState(){
+  if(SUPABASE_URL === 'REPLACE_WITH_YOUR_SUPABASE_URL') {
+    console.warn("Supabase not configured. Using empty state.");
+    appState.users = {};
+    appState.sessions = [];
+    return;
+  }
+  const { data: profiles } = await supabase.from('user_profiles').select('*');
+  if(profiles){
+    appState.users = {};
+    appState.sessions = [];
+    profiles.forEach(p => {
+      appState.users[p.username] = {
+        completedLessons: p.completed_lessons || [],
+        solvedQuestions: p.solved_questions || [],
+        xp: p.xp || 0,
+        streak: p.streak || 1,
+        lastLogin: p.last_login,
+        activity: []
+      };
+      appState.sessions.push({
+        username: p.username,
+        name: p.name,
+        role: p.role,
+        loginTime: p.last_login,
+        online: p.last_login ? (new Date() - new Date(p.last_login)) < 1000*60*60 : false
+      });
+    });
+  }
+}
+
+async function saveState(){
+  if(!currentUser || SUPABASE_URL === 'REPLACE_WITH_YOUR_SUPABASE_URL') return;
+  const us = appState.users[currentUser.username];
+  if(!us) return;
+  await supabase.from('user_profiles').update({
+    completed_lessons: us.completedLessons,
+    solved_questions: us.solvedQuestions,
+    xp: us.xp,
+    streak: us.streak,
+    last_login: new Date().toISOString()
+  }).eq('username', currentUser.username);
+}
+
+function getUserState(uname){
+  if(!appState.users[uname]) appState.users[uname]={completedLessons:[],solvedQuestions:[],xp:0,streak:1,lastLogin:null,activity:[]};
+  return appState.users[uname];
+}
+
+// ======================================================
+// AUTH
+// ======================================================
+function switchAuthTab(tab){
+  document.querySelectorAll('.login-tab').forEach((b,i)=>{b.classList.toggle('active',i===(tab==='login'?0:1));});
+  document.getElementById('loginForm').style.display=tab==='login'?'block':'none';
+  document.getElementById('registerForm').style.display=tab==='register'?'block':'none';
+}
+
+async function doLogin(){
+  if(SUPABASE_URL === 'REPLACE_WITH_YOUR_SUPABASE_URL'){
+     document.getElementById('loginErr').textContent = 'Supabase keys missing. Please configure first.';
+     document.getElementById('loginErr').style.display='block';
+     return;
+  }
+  const u=document.getElementById('loginUser').value.trim();
+  const p=document.getElementById('loginPass').value.trim();
+  const email = u + '@sqlacademy.local';
+  
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password: p });
+  if (error || !data.user) {
+    document.getElementById('loginErr').textContent = error ? error.message : 'Invalid login';
+    document.getElementById('loginErr').style.display='block';
+    return;
+  }
+  document.getElementById('loginErr').style.display='none';
+  
+  const { data: profile } = await supabase.from('user_profiles').select('*').eq('id', data.user.id).single();
+  if(profile) {
+    currentUser = { username: profile.username, name: profile.name, role: profile.role };
+    await loadState(); 
+    appState.users[u].lastLogin = new Date().toISOString();
+    saveState();
+    launchApp();
+  }
+}
+
+async function doRegister(){
+  if(SUPABASE_URL === 'REPLACE_WITH_YOUR_SUPABASE_URL'){
+     document.getElementById('regErr').textContent = 'Supabase keys missing.';
+     document.getElementById('regErr').style.display='block';
+     return;
+  }
+  const name=document.getElementById('regName').value.trim();
+  const u=document.getElementById('regUser').value.trim();
+  const p=document.getElementById('regPass').value.trim();
+  if(!name||!u||!p){document.getElementById('regErr').textContent='All fields required.';document.getElementById('regErr').style.display='block';return;}
+  
+  const email = u + '@sqlacademy.local';
+  const { data, error } = await supabase.auth.signUp({ email, password: p });
+  
+  if(error) {
+    document.getElementById('regErr').textContent=error.message;
+    document.getElementById('regErr').style.display='block';
+    return;
+  }
+  if(data.user) {
+    const role = (u === 'admin') ? 'instructor' : 'student';
+    await supabase.from('user_profiles').insert([{ id: data.user.id, username: u, name: name, role: role }]);
+    document.getElementById('regErr').textContent='Account created! Signing in...';
+    document.getElementById('regErr').style.color='var(--green)';
+    document.getElementById('regErr').style.display='block';
+    setTimeout(()=>{document.getElementById('loginUser').value=u;document.getElementById('loginPass').value=p;switchAuthTab('login');doLogin();},800);
+  }
+}
+
+async function doLogout(){
+  if(SUPABASE_URL !== 'REPLACE_WITH_YOUR_SUPABASE_URL'){
+    await supabase.auth.signOut();
+  }
+  currentUser=null;
+  document.getElementById('app').style.display='none';
+  document.getElementById('loginPage').style.display='flex';
+}
+function launchApp(){
+  document.getElementById('loginPage').style.display='none';
+  document.getElementById('app').style.display='block';
+  const initials=currentUser.name.split(' ').map(x=>x[0]).join('').toUpperCase().slice(0,2);
+  document.getElementById('userAvatar').textContent=initials;
+  document.getElementById('userName').textContent=currentUser.name;
+  document.getElementById('dashGreeting').textContent='Welcome back, '+currentUser.name.split(' ')[0]+'!';
+  if(currentUser.role==='instructor'){
+    document.querySelectorAll('.admin-only').forEach(el=>el.style.display='');
+  }
+  buildLessons();
+  buildPractice();
+  buildNumFunctions();
+  buildTracker();
+  refreshDashboard();
+  refreshUsers();
+  buildHeatmap();
+  buildAchievements();
+}
+
+// ======================================================
+// NAVIGATION
+// ======================================================
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.hnav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  const btns=[...document.querySelectorAll('.hnav-btn')];
+  const map={dashboard:0,lessons:1,practice:2,numfunctions:3,tracker:4,users:5};
+  if(btns[map[id]])btns[map[id]].classList.add('active');
+  if(id==='dashboard')refreshDashboard();
+  if(id==='tracker'){buildTracker();buildHeatmap();buildAchievements();}
+  if(id==='users')refreshUsers();
+}
+function goLesson(topic){
+  showPage('lessons');
+  setTimeout(()=>{
+    const btn=document.querySelector('[data-topic="'+topic+'"]');
+    if(btn){btn.click();}
+  },50);
+}
+
+// ======================================================
+// DASHBOARD
+// ======================================================
+function refreshDashboard(){
+  if(!currentUser)return;
+  const us=getUserState(currentUser.username);
+  document.getElementById('statLessons').textContent=us.completedLessons.length;
+  document.getElementById('statQuestions').textContent=us.solvedQuestions.length;
+  document.getElementById('statStreak').textContent=us.streak||1;
+  document.getElementById('statXP').textContent=us.xp||0;
+  const topics=[
+    {id:'intro',name:'Introduction',color:'#4f8ef7'},
+    {id:'ddl',name:'DDL',color:'#22c55e'},
+    {id:'dml',name:'DML',color:'#f97316'},
+    {id:'select',name:'SELECT',color:'#7c5cbf'},
+    {id:'joins',name:'JOINs',color:'#06b6d4'},
+    {id:'aggregates',name:'Aggregates',color:'#eab308'},
+    {id:'subqueries',name:'Subqueries',color:'#ef4444'},
+    {id:'windowfn',name:'Window Fn',color:'#a78bfa'},
+  ];
+  const solved=us.solvedQuestions||[];
+  const list=document.getElementById('topicProgressList');
+  list.innerHTML=topics.map(t=>{
+    const tq=PRACTICE_QUESTIONS.filter(q=>q.topic===t.id).length||1;
+    const done=solved.filter(s=>s.startsWith(t.id+':')).length;
+    const pct=Math.round(Math.min(done/tq*100,100));
+    return `<div class="topic-progress-item">
+      <div class="tpi-name">${t.name}</div>
+      <div class="tpi-bar-wrap"><div class="tpi-bar" style="width:${pct}%;background:${t.color}"></div></div>
+      <div class="tpi-pct">${pct}%</div>
+    </div>`;
+  }).join('');
+  // sidebar progress
+  const total=15;
+  const done=us.completedLessons.length;
+  const pct=Math.round(done/total*100);
+  document.getElementById('sbProgBar').style.width=pct+'%';
+  document.getElementById('sbProgPct').textContent=pct+'%';
+  // sidebar checkmarks
+  const topics2=['intro','ddl','dml','select','joins','aggregates','subqueries','indexes','views','transactions','windowfn','stored','triggers','normalization','optimization'];
+  topics2.forEach(t=>{
+    const el=document.getElementById('chk-'+t);
+    if(el){
+      if(us.completedLessons.includes(t)){el.classList.add('done');el.textContent='✓';}
+      else{el.classList.remove('done');el.textContent='';}
+    }
+  });
+  if(currentUser.role==='instructor'){
+    const tbody=document.getElementById('activeUsersTbody');
+    if(tbody){
+      const sessions=appState.sessions||[];
+      tbody.innerHTML=sessions.map(s=>{
+        const sUs=getUserState(s.username);
+        return `<tr>
+          <td>${s.name}</td>
+          <td>${s.role}</td>
+          <td><span class="status-badge ${s.online?'badge-online':'badge-offline'}">${s.online?'Online':'Offline'}</span></td>
+          <td>${sUs.completedLessons.length}/15 lessons</td>
+          <td>${s.online?'Active now':new Date(sUs.lastLogin||Date.now()).toLocaleTimeString()}</td>
+        </tr>`;
+      }).join('') || '<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:20px">No sessions yet</td></tr>';
+    }
+  }
+}
+
+// ======================================================
+// LESSON DATA
+// ======================================================
+const LESSONS = {
+  intro:{
+    title:'Introduction to SQL',icon:'🗄️',color:'rgba(79,142,247,0.15)',
+    sections:[{
+      title:'What is SQL?',
+      content:`<div class="tab-pane active" id="intro-c">
+      <h3>SQL — Structured Query Language</h3>
+      <p>SQL (pronounced "sequel" or "S-Q-L") is the standard language for communicating with relational databases. It was developed at IBM in the 1970s and became an ANSI/ISO standard in 1986. Every major database system (MySQL, PostgreSQL, SQL Server, Oracle, SQLite) uses SQL with minor dialect differences.</p>
+      <p>Think of a database as a filing cabinet and SQL as the language you use to:</p>
+      <ul><li><strong>Create</strong> the folders and file structures</li><li><strong>Insert</strong> documents into folders</li><li><strong>Find</strong> exactly the documents you need</li><li><strong>Update</strong> documents that changed</li><li><strong>Delete</strong> documents you no longer need</li></ul>
+      <div class="card-grid-2">
+        <div class="mini-card"><h4>DDL — Define Structure</h4><p>CREATE, ALTER, DROP, TRUNCATE — shape the schema</p></div>
+        <div class="mini-card"><h4>DML — Manage Data</h4><p>INSERT, UPDATE, DELETE, SELECT — work with rows</p></div>
+        <div class="mini-card"><h4>DCL — Control Access</h4><p>GRANT, REVOKE — manage who can do what</p></div>
+        <div class="mini-card"><h4>TCL — Control Transactions</h4><p>COMMIT, ROLLBACK, SAVEPOINT — ensure data safety</p></div>
+      </div>
+      <h3>Core Database Concepts</h3>
+      <div class="sql-table-wrap"><table class="sql-table">
+        <tr><th>Term</th><th>Definition</th><th>Real-world analogy</th></tr>
+        <tr><td>Database</td><td>A collection of organized data</td><td>A complete filing cabinet system</td></tr>
+        <tr><td>Table</td><td>A structured set of rows and columns</td><td>A single spreadsheet</td></tr>
+        <tr><td>Row / Record</td><td>A single data entry in a table</td><td>One row in a spreadsheet</td></tr>
+        <tr><td>Column / Field</td><td>A specific attribute of data</td><td>A column header in a spreadsheet</td></tr>
+        <tr><td>Primary Key</td><td>Uniquely identifies each row</td><td>Your employee ID number</td></tr>
+        <tr><td>Foreign Key</td><td>References a primary key in another table</td><td>A department ID on your employee record</td></tr>
+        <tr><td>Schema</td><td>The blueprint/structure of the database</td><td>The template of your spreadsheet</td></tr>
+        <tr><td>Query</td><td>A request to the database</td><td>Asking "find all employees hired in 2023"</td></tr>
+        <tr><td>Index</td><td>Speed up data retrieval</td><td>A book's index for quick lookup</td></tr>
+        <tr><td>Constraint</td><td>Rules enforced on data</td><td>"This column cannot be empty"</td></tr>
+      </table></div>
+      <div class="info-box tip"><h4>💡 Why learn SQL?</h4><p>SQL is used in 80%+ of all applications that store data. It's the #1 skill requested in data analyst, backend developer, and data engineer job postings. Once learned, it applies across virtually every database system.</p></div>
+      </div>
+      <div class="tab-pane" id="intro-s">
+      <h3>First SQL Queries — Start Simple</h3>
+      <div class="table-label">Sample table: students</div>
+      <div class="sql-table-wrap"><table class="sql-table">
+        <tr><th>id</th><th>name</th><th>age</th><th>city</th><th>grade</th><th>enrolled_date</th></tr>
+        <tr><td>1</td><td>Alice Johnson</td><td>22</td><td>New York</td><td>A</td><td>2022-09-01</td></tr>
+        <tr><td>2</td><td>Bob Smith</td><td>24</td><td>Chicago</td><td>B</td><td>2021-09-01</td></tr>
+        <tr><td>3</td><td>Carol White</td><td>21</td><td>New York</td><td>A</td><td>2023-01-15</td></tr>
+        <tr><td>4</td><td>Dan Lee</td><td>23</td><td>Houston</td><td>C</td><td>2022-09-01</td></tr>
+        <tr><td>5</td><td>Eva Green</td><td>22</td><td>Chicago</td><td>B</td><td>2023-09-01</td></tr>
+      </table></div>
+<pre><code><span class="cm">-- Select all columns from the students table</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> students;
+
+<span class="cm">-- Select specific columns only</span>
+<span class="kw">SELECT</span> name, age, city
+<span class="kw">FROM</span>   students;
+
+<span class="cm">-- Filter: only students from New York</span>
+<span class="kw">SELECT</span> name, grade
+<span class="kw">FROM</span>   students
+<span class="kw">WHERE</span>  city = <span class="str">'New York'</span>;
+
+<span class="cm">-- Sort by age oldest first</span>
+<span class="kw">SELECT</span> name, age
+<span class="kw">FROM</span>   students
+<span class="kw">ORDER BY</span> age <span class="kw">DESC</span>;
+
+<span class="cm">-- Limit to first 3 results</span>
+<span class="kw">SELECT</span> name, city
+<span class="kw">FROM</span>   students
+<span class="kw">LIMIT</span> <span class="num">3</span>;
+
+<span class="cm">-- Give columns aliases (friendlier names)</span>
+<span class="kw">SELECT</span> name <span class="kw">AS</span> student_name,
+       age  <span class="kw">AS</span> student_age,
+       city <span class="kw">AS</span> home_city
+<span class="kw">FROM</span>   students;
+</code></pre>
+      </div>
+      <div class="tab-pane" id="intro-r">
+      <h3>Real-World: Student Management System</h3>
+      <p>A university database might have tables like: students, courses, enrollments, instructors, grades. Here's how SQL ties them together:</p>
+<pre><code><span class="cm">-- Find all A-grade students in New York enrolled after 2022</span>
+<span class="kw">SELECT</span> name, age, enrolled_date
+<span class="kw">FROM</span>   students
+<span class="kw">WHERE</span>  grade = <span class="str">'A'</span>
+  <span class="kw">AND</span>  city = <span class="str">'New York'</span>
+  <span class="kw">AND</span>  enrolled_date > <span class="str">'2022-01-01'</span>
+<span class="kw">ORDER BY</span> enrolled_date;
+</code></pre>
+      <div class="info-box success"><h4>✅ Key takeaway</h4><p>SQL is declarative — you describe WHAT you want, not HOW to get it. The database engine figures out the most efficient way to retrieve the data.</p></div>
+      </div>
+      <div class="tab-pane" id="intro-i">
+      <div class="info-box int"><h4>🎯 Top Interview Questions on SQL Basics</h4>
+        <ul>
+          <li>What is the difference between SQL and NoSQL? — SQL is structured/relational (tables+rows); NoSQL is flexible (documents, graphs, key-value)</li>
+          <li>What are the SQL sublanguages? — DDL, DML, DCL, TCL</li>
+          <li>What is a primary key? — A column (or set) that uniquely identifies each row; cannot be NULL</li>
+          <li>What is a foreign key? — A column that references the primary key of another table to enforce referential integrity</li>
+          <li>What does SELECT * mean? — Selects all columns; should be avoided in production code (use named columns)</li>
+          <li>Is SQL case-sensitive? — Keywords are NOT case-sensitive; string values ARE in most databases</li>
+        </ul>
+      </div>
+      </div>`
+    }]
+  },
+  select:{
+    title:'SELECT & Filtering',icon:'🔍',color:'rgba(124,92,191,0.15)',
+    sections:[{
+      title:'SELECT deep dive',
+      content:`<div class="tab-pane active" id="sel-c">
+      <h3>How SELECT Works — The Logical Order</h3>
+      <p>A critical concept: SQL clauses are <em>written</em> in one order but <em>executed</em> in another. Understanding this prevents many common mistakes.</p>
+      <div class="card-grid-2">
+        <div class="mini-card"><h4>Write order</h4><p>SELECT → FROM → WHERE → GROUP BY → HAVING → ORDER BY → LIMIT</p></div>
+        <div class="mini-card"><h4>Execution order</h4><p>FROM → JOIN → WHERE → GROUP BY → HAVING → SELECT → DISTINCT → ORDER BY → LIMIT</p></div>
+      </div>
+      <h3>All Filtering Operators</h3>
+      <div class="sql-table-wrap"><table class="sql-table">
+        <tr><th>Operator</th><th>Meaning</th><th>Example</th></tr>
+        <tr><td>=</td><td>Equal to</td><td>WHERE grade = 'A'</td></tr>
+        <tr><td>!= or &lt;&gt;</td><td>Not equal</td><td>WHERE grade != 'F'</td></tr>
+        <tr><td>&lt;, &gt;, &lt;=, &gt;=</td><td>Comparisons</td><td>WHERE age >= 21</td></tr>
+        <tr><td>BETWEEN</td><td>Inclusive range</td><td>WHERE age BETWEEN 20 AND 25</td></tr>
+        <tr><td>IN</td><td>Match one of a list</td><td>WHERE city IN ('NY','Chicago')</td></tr>
+        <tr><td>NOT IN</td><td>Not in a list</td><td>WHERE city NOT IN ('NY')</td></tr>
+        <tr><td>LIKE</td><td>Pattern match (case-sensitive)</td><td>WHERE name LIKE 'A%'</td></tr>
+        <tr><td>ILIKE</td><td>Pattern match (case-insensitive, PG)</td><td>WHERE name ILIKE 'alice%'</td></tr>
+        <tr><td>IS NULL</td><td>Value is null</td><td>WHERE phone IS NULL</td></tr>
+        <tr><td>IS NOT NULL</td><td>Value exists</td><td>WHERE email IS NOT NULL</td></tr>
+        <tr><td>AND / OR / NOT</td><td>Logical operators</td><td>WHERE age > 20 AND city='NY'</td></tr>
+      </table></div>
+      <h3>LIKE Pattern Wildcards</h3>
+      <div class="sql-table-wrap"><table class="sql-table">
+        <tr><th>Wildcard</th><th>Meaning</th><th>Example</th><th>Matches</th></tr>
+        <tr><td>%</td><td>Zero or more characters</td><td>LIKE 'Al%'</td><td>Alice, Al, Albert</td></tr>
+        <tr><td>%</td><td>Suffix match</td><td>LIKE '%son'</td><td>Johnson, Wilson, son</td></tr>
+        <tr><td>%</td><td>Contains</td><td>LIKE '%oh%'</td><td>John, Johnson</td></tr>
+        <tr><td>_</td><td>Exactly one character</td><td>LIKE 'J_ne'</td><td>Jane, June, Jone</td></tr>
+      </table></div>
+      </div>
+      <div class="tab-pane" id="sel-s">
+      <div class="table-label">Sample table: employees</div>
+      <div class="sql-table-wrap"><table class="sql-table">
+        <tr><th>id</th><th>name</th><th>department</th><th>salary</th><th>hire_date</th><th>city</th><th>manager_id</th></tr>
+        <tr><td>1</td><td>Alice Chen</td><td>Engineering</td><td>95000</td><td>2020-03-01</td><td>New York</td><td>null</td></tr>
+        <tr><td>2</td><td>Bob Smith</td><td>Sales</td><td>72000</td><td>2019-07-15</td><td>Chicago</td><td>1</td></tr>
+        <tr><td>3</td><td>Carol Wu</td><td>Engineering</td><td>110000</td><td>2018-01-20</td><td>New York</td><td>1</td></tr>
+        <tr><td>4</td><td>Dan Lee</td><td>HR</td><td>58000</td><td>2022-09-01</td><td>Boston</td><td>1</td></tr>
+        <tr><td>5</td><td>Eva Park</td><td>Sales</td><td>88000</td><td>2021-04-10</td><td>Chicago</td><td>2</td></tr>
+        <tr><td>6</td><td>Frank Ray</td><td>Engineering</td><td>102000</td><td>2020-11-05</td><td>New York</td><td>1</td></tr>
+      </table></div>
+<pre><code><span class="cm">-- BETWEEN (inclusive)</span>
+<span class="kw">SELECT</span> name, salary
+<span class="kw">FROM</span>   employees
+<span class="kw">WHERE</span>  salary <span class="kw">BETWEEN</span> <span class="num">70000</span> <span class="kw">AND</span> <span class="num">100000</span>;
+
+<span class="cm">-- IN — match any of these values</span>
+<span class="kw">SELECT</span> name, department
+<span class="kw">FROM</span>   employees
+<span class="kw">WHERE</span>  department <span class="kw">IN</span> (<span class="str">'Engineering'</span>, <span class="str">'Sales'</span>);
+
+<span class="cm">-- IS NULL — find employees with no manager (the CEO!)</span>
+<span class="kw">SELECT</span> name <span class="kw">FROM</span> employees <span class="kw">WHERE</span> manager_id <span class="kw">IS NULL</span>;
+
+<span class="cm">-- CASE expression — create computed labels</span>
+<span class="kw">SELECT</span> name, salary,
+  <span class="kw">CASE</span>
+    <span class="kw">WHEN</span> salary >= <span class="num">100000</span> <span class="kw">THEN</span> <span class="str">'Senior'</span>
+    <span class="kw">WHEN</span> salary >= <span class="num">75000</span>  <span class="kw">THEN</span> <span class="str">'Mid-level'</span>
+    <span class="kw">ELSE</span>                       <span class="str">'Junior'</span>
+  <span class="kw">END</span> <span class="kw">AS</span> seniority
+<span class="kw">FROM</span> employees
+<span class="kw">ORDER BY</span> salary <span class="kw">DESC</span>;
+
+<span class="cm">-- DISTINCT — unique values only</span>
+<span class="kw">SELECT DISTINCT</span> department <span class="kw">FROM</span> employees;
+
+<span class="cm">-- Combining multiple conditions</span>
+<span class="kw">SELECT</span> name, city, salary
+<span class="kw">FROM</span>   employees
+<span class="kw">WHERE</span>  (city = <span class="str">'New York'</span> <span class="kw">OR</span> city = <span class="str">'Chicago'</span>)
+  <span class="kw">AND</span>  salary > <span class="num">80000</span>
+  <span class="kw">AND</span>  department != <span class="str">'HR'</span>;
+</code></pre>
+      </div>
+      <div class="tab-pane" id="sel-r">
+      <h3>Real-World: Product Search Engine</h3>
+<pre><code><span class="cm">-- E-commerce product search with multiple filters</span>
+<span class="kw">SELECT</span>
+    p.id, p.name,
+    p.price * (<span class="num">1</span> - p.discount/100) <span class="kw">AS</span> final_price,
+    p.stock,
+    <span class="kw">CASE</span> <span class="kw">WHEN</span> p.stock > <span class="num">0</span> <span class="kw">THEN</span> <span class="str">'In stock'</span> <span class="kw">ELSE</span> <span class="str">'Sold out'</span> <span class="kw">END</span> <span class="kw">AS</span> availability
+<span class="kw">FROM</span>   products p
+<span class="kw">WHERE</span>  p.name <span class="kw">ILIKE</span> <span class="str">'%wireless%'</span>
+  <span class="kw">AND</span>  p.price <span class="kw">BETWEEN</span> <span class="num">20</span> <span class="kw">AND</span> <span class="num">200</span>
+  <span class="kw">AND</span>  p.category <span class="kw">IN</span> (<span class="str">'Electronics'</span>, <span class="str">'Accessories'</span>)
+  <span class="kw">AND</span>  p.is_active = <span class="kw">TRUE</span>
+<span class="kw">ORDER BY</span> final_price <span class="kw">ASC</span>
+<span class="kw">LIMIT</span>  20 <span class="kw">OFFSET</span> 0;
+</code></pre>
+      </div>
+      <div class="tab-pane" id="sel-i">
+      <div class="info-box int"><h4>🎯 Interview Tips — SELECT</h4>
+        <ul>
+          <li><strong>WHERE vs HAVING:</strong> WHERE filters rows before grouping; HAVING filters groups after GROUP BY</li>
+          <li><strong>NULL comparisons:</strong> NULL = NULL is FALSE — always use IS NULL / IS NOT NULL</li>
+          <li><strong>LIKE vs ILIKE:</strong> LIKE is case-sensitive; ILIKE (PostgreSQL) is case-insensitive</li>
+          <li><strong>BETWEEN is inclusive:</strong> BETWEEN 1 AND 5 includes both 1 and 5</li>
+          <li><strong>Avoid SELECT *:</strong> In production, name specific columns for clarity and performance</li>
+          <li><strong>Execution order matters:</strong> You can't use a SELECT alias in WHERE (runs before SELECT)</li>
+        </ul>
+      </div>
+      </div>`
+    }]
+  },
+  joins:{
+    title:'JOINs',icon:'🔗',color:'rgba(6,182,212,0.15)',
+    sections:[{
+      title:'Understanding JOINs',
+      content:`<div class="tab-pane active" id="join-c">
+      <h3>What is a JOIN?</h3>
+      <p>A JOIN combines rows from two or more tables based on a related column between them. This is the heart of relational databases — data is spread across normalized tables and JOINs bring it back together for queries.</p>
+      <div class="sql-table-wrap"><table class="sql-table">
+        <tr><th>JOIN Type</th><th>What it returns</th><th>Venn diagram</th><th>Use when</th></tr>
+        <tr><td>INNER JOIN</td><td>Only rows matching in BOTH tables</td><td>Intersection only</td><td>You want matches only</td></tr>
+        <tr><td>LEFT JOIN</td><td>All left rows + matched right rows</td><td>Left circle + intersection</td><td>Keep all left, nullable right</td></tr>
+        <tr><td>RIGHT JOIN</td><td>All right rows + matched left rows</td><td>Right circle + intersection</td><td>Rarely used (flip to LEFT JOIN)</td></tr>
+        <tr><td>FULL OUTER JOIN</td><td>All rows from both tables</td><td>Both circles</td><td>Find unmatched on either side</td></tr>
+        <tr><td>CROSS JOIN</td><td>Every combination (Cartesian product)</td><td>All pairs</td><td>Generate combinations</td></tr>
+        <tr><td>SELF JOIN</td><td>Table joined to itself</td><td>Same table twice</td><td>Hierarchies, comparisons</td></tr>
+      </table></div>
+      </div>
+      <div class="tab-pane" id="join-s">
+      <div class="table-label">employees table</div>
+      <div class="sql-table-wrap"><table class="sql-table">
+        <tr><th>id</th><th>name</th><th>dept_id</th><th>salary</th></tr>
+        <tr><td>1</td><td>Alice</td><td>1</td><td>95000</td></tr>
+        <tr><td>2</td><td>Bob</td><td>2</td><td>72000</td></tr>
+        <tr><td>3</td><td>Carol</td><td>1</td><td>110000</td></tr>
+        <tr><td>4</td><td>Dan</td><td>NULL</td><td>58000</td></tr>
+      </table></div>
+      <div class="table-label">departments table</div>
+      <div class="sql-table-wrap"><table class="sql-table">
+        <tr><th>id</th><th>name</th><th>budget</th></tr>
+        <tr><td>1</td><td>Engineering</td><td>500000</td></tr>
+        <tr><td>2</td><td>Sales</td><td>300000</td></tr>
+        <tr><td>3</td><td>HR</td><td>150000</td></tr>
+      </table></div>
+<pre><code><span class="cm">-- INNER JOIN: only employees WITH a department</span>
+<span class="kw">SELECT</span> e.name, d.name <span class="kw">AS</span> dept, e.salary
+<span class="kw">FROM</span>   employees e
+<span class="kw">INNER JOIN</span> departments d <span class="kw">ON</span> d.id = e.dept_id;
+<span class="cm">-- Result: Alice(Eng), Bob(Sales), Carol(Eng) — Dan excluded (null dept)</span>
+
+<span class="cm">-- LEFT JOIN: ALL employees, dept info if available</span>
+<span class="kw">SELECT</span> e.name, COALESCE(d.name, 'Unassigned') <span class="kw">AS</span> dept
+<span class="kw">FROM</span>   employees e
+<span class="kw">LEFT JOIN</span> departments d <span class="kw">ON</span> d.id = e.dept_id;
+<span class="cm">-- Result: Alice(Eng), Bob(Sales), Carol(Eng), Dan(Unassigned)</span>
+
+<span class="cm">-- FULL OUTER JOIN: find unmatched on BOTH sides</span>
+<span class="kw">SELECT</span> e.name, d.name <span class="kw">AS</span> dept
+<span class="kw">FROM</span>   employees e
+<span class="kw">FULL OUTER JOIN</span> departments d <span class="kw">ON</span> d.id = e.dept_id;
+<span class="cm">-- Result: all employees + HR dept (no employees)</span>
+
+<span class="cm">-- SELF JOIN: employee and their manager</span>
+<span class="kw">SELECT</span> e.name <span class="kw">AS</span> employee, m.name <span class="kw">AS</span> manager
+<span class="kw">FROM</span>   employees e
+<span class="kw">LEFT JOIN</span> employees m <span class="kw">ON</span> m.id = e.manager_id;
+
+<span class="cm">-- Anti-join: employees WITHOUT a department</span>
+<span class="kw">SELECT</span> e.name
+<span class="kw">FROM</span>   employees e
+<span class="kw">LEFT JOIN</span> departments d <span class="kw">ON</span> d.id = e.dept_id
+<span class="kw">WHERE</span>  d.id <span class="kw">IS NULL</span>;
+</code></pre>
+      </div>
+      <div class="tab-pane" id="join-r">
+      <h3>Real-World: E-Commerce Order History</h3>
+<pre><code><span class="kw">SELECT</span>
+    o.id            <span class="kw">AS</span> order_id,
+    c.name          <span class="kw">AS</span> customer,
+    p.name          <span class="kw">AS</span> product,
+    oi.quantity,
+    oi.quantity * p.price <span class="kw">AS</span> line_total,
+    o.status,
+    o.created_at
+<span class="kw">FROM</span>   orders o
+<span class="kw">JOIN</span>   customers c    <span class="kw">ON</span> c.id = o.customer_id
+<span class="kw">JOIN</span>   order_items oi <span class="kw">ON</span> oi.order_id = o.id
+<span class="kw">JOIN</span>   products p     <span class="kw">ON</span> p.id = oi.product_id
+<span class="kw">WHERE</span>  o.status = <span class="str">'completed'</span>
+<span class="kw">ORDER BY</span> o.created_at <span class="kw">DESC</span>;
+</code></pre>
+      </div>
+      <div class="tab-pane" id="join-i">
+      <div class="info-box int"><h4>🎯 JOIN Interview Tips</h4>
+        <ul>
+          <li><strong>Most common mistake:</strong> Using INNER JOIN when LEFT JOIN is needed (excludes unmatched rows)</li>
+          <li><strong>"Find customers with no orders":</strong> LEFT JOIN + WHERE orders.id IS NULL (anti-join pattern)</li>
+          <li><strong>JOIN performance:</strong> Always join on indexed columns (PK/FK). Joining on unindexed text is slow</li>
+          <li><strong>Table aliases:</strong> Always alias tables in multi-table queries (e AS employees) for clarity</li>
+          <li><strong>CROSS JOIN caution:</strong> 1000 rows × 1000 rows = 1,000,000 rows — always intentional</li>
+        </ul>
+      </div>
+      </div>`
+    }]
+  },
+  aggregates:{
+    title:'Aggregates & GROUP BY',icon:'📊',color:'rgba(234,179,8,0.15)',
+    sections:[{
+      title:'Aggregate Functions',
+      content:`<div class="tab-pane active" id="agg-c">
+      <h3>Aggregate Functions</h3>
+      <p>Aggregate functions perform calculations on a set of values and return a single value. They are used with GROUP BY to compute statistics per group.</p>
+      <div class="sql-table-wrap"><table class="sql-table">
+        <tr><th>Function</th><th>What it does</th><th>NULL behavior</th><th>Example result</th></tr>
+        <tr><td>COUNT(*)</td><td>Count all rows including NULLs</td><td>Includes NULLs</td><td>5</td></tr>
+        <tr><td>COUNT(col)</td><td>Count non-null values in column</td><td>Skips NULLs</td><td>4</td></tr>
+        <tr><td>COUNT(DISTINCT col)</td><td>Count unique non-null values</td><td>Skips NULLs</td><td>3</td></tr>
+        <tr><td>SUM(col)</td><td>Sum of all non-null values</td><td>Skips NULLs</td><td>435000</td></tr>
+        <tr><td>AVG(col)</td><td>Average of non-null values</td><td>Skips NULLs</td><td>87000</td></tr>
+        <tr><td>MIN(col)</td><td>Smallest value</td><td>Skips NULLs</td><td>58000</td></tr>
+        <tr><td>MAX(col)</td><td>Largest value</td><td>Skips NULLs</td><td>110000</td></tr>
+        <tr><td>STRING_AGG(col,sep)</td><td>Concatenate values</td><td>Skips NULLs</td><td>'Alice, Bob'</td></tr>
+        <tr><td>ARRAY_AGG(col)</td><td>Collect into array</td><td>Includes NULLs</td><td>{Alice, Bob}</td></tr>
+      </table></div>
+      <h3>GROUP BY Rules — Critical to understand</h3>
+      <ul>
+        <li>Every column in SELECT that is NOT inside an aggregate function MUST appear in GROUP BY</li>
+        <li>You cannot use aggregate functions in WHERE — use HAVING instead</li>
+        <li>HAVING filters AFTER grouping; WHERE filters BEFORE grouping</li>
+        <li>GROUP BY executes before SELECT — you can't use SELECT aliases in GROUP BY</li>
+      </ul>
+      </div>
+      <div class="tab-pane" id="agg-s">
+      <div class="table-label">sales table</div>
+      <div class="sql-table-wrap"><table class="sql-table">
+        <tr><th>id</th><th>salesperson</th><th>region</th><th>product</th><th>amount</th><th>sale_date</th></tr>
+        <tr><td>1</td><td>Alice</td><td>North</td><td>Laptop</td><td>1200</td><td>2024-01-05</td></tr>
+        <tr><td>2</td><td>Bob</td><td>South</td><td>Phone</td><td>800</td><td>2024-01-10</td></tr>
+        <tr><td>3</td><td>Alice</td><td>North</td><td>Tablet</td><td>600</td><td>2024-01-15</td></tr>
+        <tr><td>4</td><td>Carol</td><td>East</td><td>Laptop</td><td>1200</td><td>2024-02-01</td></tr>
+        <tr><td>5</td><td>Bob</td><td>South</td><td>Laptop</td><td>1200</td><td>2024-02-10</td></tr>
+        <tr><td>6</td><td>Carol</td><td>East</td><td>Phone</td><td>800</td><td>2024-02-15</td></tr>
+      </table></div>
+<pre><code><span class="cm">-- Group by salesperson</span>
+<span class="kw">SELECT</span>
+    salesperson,
+    COUNT(*)           <span class="kw">AS</span> num_sales,
+    SUM(amount)        <span class="kw">AS</span> total_revenue,
+    AVG(amount)        <span class="kw">AS</span> avg_sale,
+    MAX(amount)        <span class="kw">AS</span> biggest_sale,
+    MIN(amount)        <span class="kw">AS</span> smallest_sale
+<span class="kw">FROM</span>   sales
+<span class="kw">GROUP BY</span> salesperson
+<span class="kw">ORDER BY</span> total_revenue <span class="kw">DESC</span>;
+
+<span class="cm">-- HAVING: only reps with more than 1 sale</span>
+<span class="kw">SELECT</span> salesperson, COUNT(*) <span class="kw">AS</span> num_sales
+<span class="kw">FROM</span>   sales
+<span class="kw">GROUP BY</span> salesperson
+<span class="kw">HAVING</span>   COUNT(*) > <span class="num">1</span>;
+
+<span class="cm">-- Group by multiple columns</span>
+<span class="kw">SELECT</span> region, product, SUM(amount) <span class="kw">AS</span> revenue
+<span class="kw">FROM</span>   sales
+<span class="kw">GROUP BY</span> region, product
+<span class="kw">ORDER BY</span> region, revenue <span class="kw">DESC</span>;
+
+<span class="cm">-- STRING_AGG: list products per salesperson</span>
+<span class="kw">SELECT</span>
+    salesperson,
+    STRING_AGG(product, <span class="str">', '</span> ORDER BY product) <span class="kw">AS</span> products_sold
+<span class="kw">FROM</span>   sales
+<span class="kw">GROUP BY</span> salesperson;
+</code></pre>
+      </div>
+      <div class="tab-pane" id="agg-r">
+      <h3>Real-World: Monthly Revenue Report</h3>
+<pre><code><span class="kw">SELECT</span>
+    TO_CHAR(sale_date, <span class="str">'YYYY-MM'</span>)       <span class="kw">AS</span> month,
+    region,
+    COUNT(*)                              <span class="kw">AS</span> transactions,
+    ROUND(SUM(amount), 2)                 <span class="kw">AS</span> revenue,
+    ROUND(AVG(amount), 2)                 <span class="kw">AS</span> avg_transaction,
+    COUNT(DISTINCT salesperson)           <span class="kw">AS</span> active_reps
+<span class="kw">FROM</span>   sales
+<span class="kw">WHERE</span>  sale_date >= '2024-01-01'
+<span class="kw">GROUP BY</span> month, region
+<span class="kw">HAVING</span> SUM(amount) > 500
+<span class="kw">ORDER BY</span> month DESC, revenue DESC;
+</code></pre>
+      </div>
+      <div class="tab-pane" id="agg-i">
+      <div class="info-box int"><h4>🎯 Aggregate Interview Tips</h4>
+        <ul>
+          <li><strong>COUNT(*) vs COUNT(col):</strong> COUNT(*) = total rows; COUNT(col) = non-null values in that column</li>
+          <li><strong>WHERE vs HAVING:</strong> This is one of the most common SQL interview questions. WHERE = before grouping; HAVING = after grouping</li>
+          <li><strong>Group by rule:</strong> Every non-aggregate SELECT column must be in GROUP BY</li>
+          <li><strong>AVG and NULLs:</strong> AVG(col) ignores NULLs — this can give misleading results. Use COALESCE to handle NULLs before aggregating</li>
+        </ul>
+      </div>
+      </div>`
+    }]
+  },
+  windowfn:{
+    title:'Window Functions',icon:'🪟',color:'rgba(167,139,250,0.15)',
+    sections:[{
+      title:'Window Functions',
+      content:`<div class="tab-pane active" id="win-c">
+      <h3>What are Window Functions?</h3>
+      <p>Window functions perform calculations <strong>across a set of rows related to the current row</strong>. Unlike GROUP BY (which collapses rows), window functions return a value for each row while still having access to other rows in the "window".</p>
+      <p>The syntax is: <code>FUNCTION() OVER (PARTITION BY ... ORDER BY ... ROWS/RANGE BETWEEN ...)</code></p>
+      <div class="sql-table-wrap"><table class="sql-table">
+        <tr><th>Category</th><th>Functions</th><th>What they do</th></tr>
+        <tr><td>Ranking</td><td>ROW_NUMBER(), RANK(), DENSE_RANK(), NTILE(n)</td><td>Assign rank to each row in window</td></tr>
+        <tr><td>Value/Navigation</td><td>LAG(), LEAD(), FIRST_VALUE(), LAST_VALUE(), NTH_VALUE()</td><td>Access other rows relative to current</td></tr>
+        <tr><td>Aggregate</td><td>SUM() OVER, AVG() OVER, COUNT() OVER, MIN/MAX OVER</td><td>Aggregate without collapsing rows</td></tr>
+        <tr><td>Distribution</td><td>PERCENT_RANK(), CUME_DIST()</td><td>Statistical distribution values</td></tr>
+      </table></div>
+      <div class="card-grid-2">
+        <div class="mini-card"><h4>ROW_NUMBER()</h4><p>Always unique (1,2,3,4). Breaks ties arbitrarily.</p></div>
+        <div class="mini-card"><h4>RANK()</h4><p>Ties get same rank; gaps follow (1,1,3,4).</p></div>
+        <div class="mini-card"><h4>DENSE_RANK()</h4><p>Ties same rank; no gaps (1,1,2,3).</p></div>
+        <div class="mini-card"><h4>LAG() / LEAD()</h4><p>Access previous/next row value in window.</p></div>
+      </div>
+      </div>
+      <div class="tab-pane" id="win-s">
+      <div class="table-label">scores table</div>
+      <div class="sql-table-wrap"><table class="sql-table">
+        <tr><th>student</th><th>subject</th><th>score</th></tr>
+        <tr><td>Alice</td><td>Math</td><td>95</td></tr>
+        <tr><td>Bob</td><td>Math</td><td>82</td></tr>
+        <tr><td>Carol</td><td>Math</td><td>95</td></tr>
+        <tr><td>Dan</td><td>Math</td><td>78</td></tr>
+        <tr><td>Alice</td><td>Science</td><td>88</td></tr>
+        <tr><td>Bob</td><td>Science</td><td>91</td></tr>
+        <tr><td>Carol</td><td>Science</td><td>85</td></tr>
+      </table></div>
+<pre><code><span class="cm">-- ROW_NUMBER, RANK, DENSE_RANK comparison</span>
+<span class="kw">SELECT</span> student, subject, score,
+    ROW_NUMBER()  OVER (PARTITION BY subject ORDER BY score DESC) AS row_num,
+    RANK()        OVER (PARTITION BY subject ORDER BY score DESC) AS rank,
+    DENSE_RANK()  OVER (PARTITION BY subject ORDER BY score DESC) AS d_rank
+<span class="kw">FROM</span> scores;
+
+<span class="cm">-- Running total of scores per subject</span>
+<span class="kw">SELECT</span> student, subject, score,
+    SUM(score) OVER (
+        PARTITION BY subject
+        ORDER BY score DESC
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+    ) AS running_total
+<span class="kw">FROM</span> scores;
+
+<span class="cm">-- Compare each score to subject average</span>
+<span class="kw">SELECT</span> student, subject, score,
+    ROUND(AVG(score) OVER (PARTITION BY subject), 1) AS subj_avg,
+    score - AVG(score) OVER (PARTITION BY subject)   AS diff
+<span class="kw">FROM</span> scores;
+
+<span class="cm">-- LAG: compare to previous exam score</span>
+<span class="kw">SELECT</span> student, subject, score,
+    LAG(score, 1) OVER (PARTITION BY student ORDER BY subject) AS prev_score,
+    score - LAG(score,1) OVER (PARTITION BY student ORDER BY subject) AS improvement
+<span class="kw">FROM</span> scores;
+
+<span class="cm">-- Top scorer per subject (using CTE + WHERE)</span>
+<span class="kw">WITH</span> ranked AS (
+    <span class="kw">SELECT</span> student, subject, score,
+        DENSE_RANK() OVER (PARTITION BY subject ORDER BY score DESC) AS rnk
+    <span class="kw">FROM</span> scores
+)
+<span class="kw">SELECT</span> student, subject, score
+<span class="kw">FROM</span>   ranked
+<span class="kw">WHERE</span>  rnk = 1;
+</code></pre>
+      </div>
+      <div class="tab-pane" id="win-r">
+      <h3>Real-World: Sales Leaderboard</h3>
+<pre><code><span class="cm">-- Monthly sales ranking with MoM comparison</span>
+<span class="kw">WITH</span> monthly_sales AS (
+    <span class="kw">SELECT</span>
+        salesperson,
+        DATE_TRUNC('month', sale_date) AS month,
+        SUM(amount) AS revenue
+    <span class="kw">FROM</span> sales GROUP BY 1,2
+)
+<span class="kw">SELECT</span>
+    salesperson, month, revenue,
+    DENSE_RANK() OVER (PARTITION BY month ORDER BY revenue DESC) AS monthly_rank,
+    LAG(revenue) OVER (PARTITION BY salesperson ORDER BY month) AS prev_month,
+    ROUND((revenue - LAG(revenue) OVER (PARTITION BY salesperson ORDER BY month))
+          / LAG(revenue) OVER (PARTITION BY salesperson ORDER BY month) * 100, 1) AS growth_pct
+<span class="kw">FROM</span>   monthly_sales
+<span class="kw">ORDER BY</span> month DESC, monthly_rank;
+</code></pre>
+      </div>
+      <div class="tab-pane" id="win-i">
+      <div class="info-box int"><h4>🎯 Window Function Interview Tips</h4>
+        <ul>
+          <li><strong>"Get top N per group"</strong> is the #1 window function interview question — use DENSE_RANK() OVER (PARTITION BY ... ORDER BY ...) then filter in a CTE</li>
+          <li><strong>GROUP BY vs Window:</strong> GROUP BY collapses rows; Window keeps all rows. Window functions cannot appear in WHERE or HAVING clauses</li>
+          <li><strong>PARTITION BY vs GROUP BY:</strong> PARTITION BY divides rows for the window calculation but doesn't reduce output rows</li>
+          <li><strong>Frame clause:</strong> ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW = all rows from start to current row (useful for running totals)</li>
+        </ul>
+      </div>
+      </div>`
+    }]
+  }
+};
+
+// Basic lessons stubs
+['ddl','dml','subqueries','indexes','views','transactions','stored','triggers','normalization','optimization'].forEach(id=>{
+  if(!LESSONS[id]) LESSONS[id]={
+    title:({'ddl':'DDL — CREATE, ALTER, DROP','dml':'DML — INSERT, UPDATE, DELETE','subqueries':'Subqueries & CTEs','indexes':'Indexes','views':'Views','transactions':'Transactions & ACID','stored':'Stored Procedures','triggers':'Triggers','normalization':'Normalization','optimization':'Query Optimization'})[id],
+    icon:({'ddl':'🏗️','dml':'✏️','subqueries':'🪆','indexes':'📑','views':'👁️','transactions':'🔐','stored':'⚙️','triggers':'⚡','normalization':'📐','optimization':'🚀'})[id],
+    color:'rgba(79,142,247,0.1)',
+    sections:[{title:({'ddl':'Data Definition Language','dml':'Data Manipulation Language','subqueries':'Subqueries & CTEs','indexes':'Index Fundamentals','views':'Database Views','transactions':'ACID & Transactions','stored':'Stored Procedures','triggers':'Database Triggers','normalization':'Database Normalization','optimization':'Query Optimization'})[id],
+    content:generateLessonContent(id)}]
+  };
+});
+
+function generateLessonContent(id){
+  const data={
+    ddl:{
+      concept:`<h3>DDL — Data Definition Language</h3>
+      <p>DDL commands define and modify the database schema (structure). They are <strong>auto-committed</strong> — they cannot be rolled back in most databases. DDL deals with the shape of data, not the data itself.</p>
+      <div class="card-grid-2">
+        <div class="mini-card"><h4>CREATE</h4><p>Creates a new table, view, index, procedure, or database</p></div>
+        <div class="mini-card"><h4>ALTER</h4><p>Modifies an existing object — add/drop/rename columns, change types, add constraints</p></div>
+        <div class="mini-card"><h4>DROP</h4><p>Permanently deletes a database object and all its data. Irreversible!</p></div>
+        <div class="mini-card"><h4>TRUNCATE</h4><p>Removes all rows from a table but keeps the structure. Faster than DELETE for clearing tables.</p></div>
+      </div>
+      <h3>Data Types Reference</h3>
+      <div class="sql-table-wrap"><table class="sql-table">
+        <tr><th>Type</th><th>Description</th><th>Storage</th><th>Example</th></tr>
+        <tr><td>INT / INTEGER</td><td>Whole numbers</td><td>4 bytes</td><td>42, -100, 0</td></tr>
+        <tr><td>BIGINT</td><td>Large whole numbers</td><td>8 bytes</td><td>9,223,372,036,854</td></tr>
+        <tr><td>DECIMAL(p,s)</td><td>Exact decimal (p digits, s after point)</td><td>Variable</td><td>99.95, 1234.56</td></tr>
+        <tr><td>FLOAT / DOUBLE</td><td>Approximate decimal (avoid for money!)</td><td>4/8 bytes</td><td>3.14159</td></tr>
+        <tr><td>VARCHAR(n)</td><td>Variable-length string up to n chars</td><td>Variable</td><td>'Alice'</td></tr>
+        <tr><td>CHAR(n)</td><td>Fixed-length string, padded with spaces</td><td>n bytes</td><td>'NY  ' (CHAR(4))</td></tr>
+        <tr><td>TEXT</td><td>Unlimited length string</td><td>Variable</td><td>Long descriptions</td></tr>
+        <tr><td>DATE</td><td>Date only (no time)</td><td>4 bytes</td><td>2024-01-15</td></tr>
+        <tr><td>TIMESTAMP</td><td>Date and time</td><td>8 bytes</td><td>2024-01-15 09:30:00</td></tr>
+        <tr><td>BOOLEAN</td><td>True/False</td><td>1 byte</td><td>TRUE, FALSE</td></tr>
+        <tr><td>UUID</td><td>Universally unique identifier</td><td>16 bytes</td><td>550e8400-e29b-...</td></tr>
+        <tr><td>JSON / JSONB</td><td>JSON data (JSONB = binary, indexed)</td><td>Variable</td><td>{"key": "value"}</td></tr>
+        <tr><td>SERIAL</td><td>Auto-increment integer (PostgreSQL)</td><td>4 bytes</td><td>1, 2, 3, ...</td></tr>
+      </table></div>
+      <h3>Constraints</h3>
+      <div class="sql-table-wrap"><table class="sql-table">
+        <tr><th>Constraint</th><th>Purpose</th><th>Example</th></tr>
+        <tr><td>PRIMARY KEY</td><td>Unique + NOT NULL identifier</td><td>id INT PRIMARY KEY</td></tr>
+        <tr><td>NOT NULL</td><td>Column cannot be empty</td><td>name VARCHAR(100) NOT NULL</td></tr>
+        <tr><td>UNIQUE</td><td>No duplicate values allowed</td><td>email VARCHAR UNIQUE</td></tr>
+        <tr><td>FOREIGN KEY</td><td>References another table's PK</td><td>dept_id REFERENCES departments(id)</td></tr>
+        <tr><td>CHECK</td><td>Custom validation rule</td><td>CHECK (age >= 0 AND age <= 150)</td></tr>
+        <tr><td>DEFAULT</td><td>Value when none is provided</td><td>status VARCHAR DEFAULT 'active'</td></tr>
+      </table></div>`,
+      syntax:`<div class="table-label">students table created by DDL below</div>
+      <div class="sql-table-wrap"><table class="sql-table">
+        <tr><th>id</th><th>name</th><th>email</th><th>age</th><th>gpa</th><th>enrolled_date</th><th>is_active</th></tr>
+        <tr><td>1</td><td>Alice</td><td>alice@uni.edu</td><td>22</td><td>3.8</td><td>2022-09-01</td><td>true</td></tr>
+        <tr><td>2</td><td>Bob</td><td>bob@uni.edu</td><td>24</td><td>3.2</td><td>2021-09-01</td><td>true</td></tr>
+      </table></div>
+<pre><code><span class="cm">-- CREATE TABLE with all constraint types</span>
+CREATE TABLE students (
+    id            SERIAL         PRIMARY KEY,
+    name          VARCHAR(100)   NOT NULL,
+    email         VARCHAR(200)   UNIQUE NOT NULL,
+    age           INT            CHECK (age >= 16 AND age <= 80),
+    gpa           DECIMAL(3,2)   CHECK (gpa BETWEEN 0.0 AND 4.0),
+    department_id INT            REFERENCES departments(id) ON DELETE SET NULL,
+    enrolled_date DATE           DEFAULT CURRENT_DATE,
+    is_active     BOOLEAN        DEFAULT TRUE,
+    created_at    TIMESTAMP      DEFAULT NOW()
+);
+
+<span class="cm">-- ALTER: add a phone column</span>
+ALTER TABLE students ADD COLUMN phone VARCHAR(20);
+
+<span class="cm">-- ALTER: rename column</span>
+ALTER TABLE students RENAME COLUMN phone TO phone_number;
+
+<span class="cm">-- ALTER: change data type</span>
+ALTER TABLE students ALTER COLUMN gpa TYPE DECIMAL(4,2);
+
+<span class="cm">-- ALTER: add a constraint</span>
+ALTER TABLE students ADD CONSTRAINT chk_name_len CHECK (LENGTH(name) >= 2);
+
+<span class="cm">-- ALTER: drop a column</span>
+ALTER TABLE students DROP COLUMN IF EXISTS phone_number;
+
+<span class="cm">-- TRUNCATE: clear all data, keep structure</span>
+TRUNCATE TABLE session_logs;
+
+<span class="cm">-- DROP: delete entire table (CAREFUL!)</span>
+DROP TABLE IF EXISTS temp_staging;
+</code></pre>`,
+      real:`<h3>Real-World: Building a School Database Schema</h3>
+<pre><code>CREATE TABLE departments (
+    id    SERIAL PRIMARY KEY,
+    name  VARCHAR(100) NOT NULL UNIQUE,
+    head  VARCHAR(100)
+);
+CREATE TABLE courses (
+    id          SERIAL PRIMARY KEY,
+    code        VARCHAR(20) UNIQUE NOT NULL,
+    title       VARCHAR(200) NOT NULL,
+    dept_id     INT REFERENCES departments(id),
+    credits     INT CHECK (credits BETWEEN 1 AND 6),
+    max_students INT DEFAULT 30
+);
+CREATE TABLE students (
+    id        SERIAL PRIMARY KEY,
+    name      VARCHAR(100) NOT NULL,
+    email     VARCHAR(200) UNIQUE NOT NULL,
+    dept_id   INT REFERENCES departments(id),
+    gpa       DECIMAL(3,2) DEFAULT 0.00
+);
+CREATE TABLE enrollments (
+    student_id INT REFERENCES students(id) ON DELETE CASCADE,
+    course_id  INT REFERENCES courses(id)  ON DELETE CASCADE,
+    grade      CHAR(2),
+    enrolled_at TIMESTAMP DEFAULT NOW(),
+    PRIMARY KEY (student_id, course_id)  -- composite PK
+);
+<span class="cm">-- Schema migration: add a new feature</span>
+ALTER TABLE students ADD COLUMN scholarship BOOLEAN DEFAULT FALSE;
+</code></pre>`,
+      interview:`<div class="info-box int"><h4>🎯 DDL Interview Questions</h4>
+        <ul>
+          <li><strong>DROP vs TRUNCATE vs DELETE:</strong> DROP removes the table entirely; TRUNCATE removes all rows but keeps the table; DELETE removes specific rows. TRUNCATE and DROP cannot be rolled back (DDL); DELETE can be rolled back (DML).</li>
+          <li><strong>What is a composite primary key?</strong> A primary key made of two or more columns together. Example: (student_id, course_id) in an enrollments table.</li>
+          <li><strong>ON DELETE CASCADE vs SET NULL vs RESTRICT:</strong> CASCADE = delete child rows; SET NULL = set FK to NULL; RESTRICT = prevent deletion if children exist.</li>
+          <li><strong>Can you alter a PRIMARY KEY?</strong> Generally you must DROP the constraint and re-ADD it. Most databases don't allow direct ALTER of PKs.</li>
+          <li><strong>What is SERIAL / AUTO_INCREMENT?</strong> Automatically generates sequential integer values for new rows — used for primary keys.</li>
+        </ul>
+      </div>`
+    },
+    dml:{
+      concept:`<h3>DML — Data Manipulation Language</h3>
+      <p>DML commands work with the actual data inside tables. Unlike DDL, DML is <strong>transactional</strong> — changes can be rolled back before they are committed.</p>
+      <div class="card-grid-2">
+        <div class="mini-card"><h4>INSERT</h4><p>Add new rows to a table. Can insert one or many rows at once. Can insert from a SELECT query.</p></div>
+        <div class="mini-card"><h4>UPDATE</h4><p>Modify existing rows. ALWAYS use WHERE — without it, ALL rows are updated!</p></div>
+        <div class="mini-card"><h4>DELETE</h4><p>Remove rows. ALWAYS use WHERE — without it, ALL rows are deleted!</p></div>
+        <div class="mini-card"><h4>UPSERT</h4><p>INSERT or UPDATE based on a conflict. PostgreSQL: ON CONFLICT DO UPDATE. MySQL: ON DUPLICATE KEY UPDATE.</p></div>
+      </div>
+      <div class="info-box warn"><h4>⚠️ Golden Rule</h4><p>Before running UPDATE or DELETE, always test the WHERE condition with a SELECT first to verify exactly which rows will be affected. One missing WHERE clause can corrupt an entire database.</p></div>`,
+      syntax:`<div class="table-label">products table</div>
+      <div class="sql-table-wrap"><table class="sql-table">
+        <tr><th>id</th><th>name</th><th>price</th><th>stock</th><th>category</th><th>is_active</th></tr>
+        <tr><td>1</td><td>Laptop Pro</td><td>999.99</td><td>50</td><td>Electronics</td><td>true</td></tr>
+        <tr><td>2</td><td>Wireless Mouse</td><td>29.99</td><td>200</td><td>Accessories</td><td>true</td></tr>
+        <tr><td>3</td><td>USB-C Hub</td><td>49.99</td><td>150</td><td>Accessories</td><td>true</td></tr>
+        <tr><td>4</td><td>Old Keyboard</td><td>15.00</td><td>0</td><td>Accessories</td><td>false</td></tr>
+      </table></div>
+<pre><code><span class="cm">-- INSERT single row</span>
+INSERT INTO products (name, price, stock, category)
+VALUES ('Bluetooth Headset', 79.99, 100, 'Electronics');
+
+<span class="cm">-- INSERT multiple rows at once</span>
+INSERT INTO products (name, price, stock, category)
+VALUES
+    ('Monitor 24"',   249.99, 30, 'Electronics'),
+    ('Webcam HD',      59.99, 75, 'Electronics'),
+    ('Desk Lamp LED',  24.99, 120,'Accessories');
+
+<span class="cm">-- INSERT from SELECT (copy data)</span>
+INSERT INTO archived_products
+SELECT * FROM products WHERE is_active = FALSE;
+
+<span class="cm">-- UPDATE with WHERE (critical!)</span>
+UPDATE products
+SET    price = price * 0.90,   -- 10% discount
+       updated_at = NOW()
+WHERE  category = 'Accessories'
+  AND  stock > 0;
+
+<span class="cm">-- UPDATE with JOIN (update based on another table)</span>
+UPDATE products p
+SET    price = p.price * (1 - d.discount_pct/100)
+FROM   discounts d
+WHERE  d.category = p.category
+  AND  d.is_active = TRUE;
+
+<span class="cm">-- DELETE with WHERE</span>
+DELETE FROM products
+WHERE  is_active = FALSE
+  AND  stock = 0
+  AND  updated_at < NOW() - INTERVAL '1 year';
+
+<span class="cm">-- UPSERT (PostgreSQL)</span>
+INSERT INTO products (id, name, price, stock)
+VALUES (1, 'Laptop Pro', 1099.99, 45)
+ON CONFLICT (id)
+DO UPDATE SET
+    price = EXCLUDED.price,
+    stock = EXCLUDED.stock,
+    updated_at = NOW();
+
+<span class="cm">-- RETURNING: get the affected rows back</span>
+INSERT INTO products (name, price, stock, category)
+VALUES ('New Item', 19.99, 100, 'Accessories')
+RETURNING id, name, created_at;
+</code></pre>`,
+      real:`<h3>Real-World: Order Processing Transaction</h3>
+<pre><code>BEGIN;
+<span class="cm">-- Step 1: Create the order</span>
+INSERT INTO orders (customer_id, status, created_at)
+VALUES (42, 'pending', NOW())
+RETURNING id INTO order_id;
+
+<span class="cm">-- Step 2: Add order items</span>
+INSERT INTO order_items (order_id, product_id, qty, unit_price)
+VALUES (order_id, 7, 2, 49.99);
+
+<span class="cm">-- Step 3: Reduce inventory</span>
+UPDATE products
+SET stock = stock - 2
+WHERE id = 7 AND stock >= 2;
+
+<span class="cm">-- Step 4: If stock was insufficient, ROLLBACK</span>
+<span class="cm">-- (Application checks affected rows = 0 → ROLLBACK)</span>
+<span class="cm">-- Otherwise:</span>
+COMMIT;
+</code></pre>`,
+      interview:`<div class="info-box int"><h4>🎯 DML Interview Questions</h4>
+        <ul>
+          <li><strong>How do you prevent accidental full-table UPDATE?</strong> Always use WHERE. Test with SELECT first. In production, use transactions.</li>
+          <li><strong>What is RETURNING?</strong> PostgreSQL clause that returns the affected rows from INSERT/UPDATE/DELETE without needing a second query.</li>
+          <li><strong>What is UPSERT?</strong> INSERT a row, but if it conflicts (usually on PK or UNIQUE), UPDATE instead. Atomic — no race conditions.</li>
+          <li><strong>Can DELETE be rolled back?</strong> Yes — DELETE is DML, so it can be rolled back within a transaction. TRUNCATE (DDL) cannot in most databases.</li>
+        </ul>
+      </div>`
+    }
+  };
+
+  const d=data[id];
+  if(!d) return `<div class="tab-pane active" id="${id}-c"><div class="info-box tip"><h4>📖 Coming Soon</h4><p>This lesson is being expanded. Check back shortly for full content including concept, syntax, real-world examples, and interview tips.</p></div></div><div class="tab-pane" id="${id}-s"><pre><code><span class="cm">-- Content expanding...</span></code></pre></div><div class="tab-pane" id="${id}-r"><p>Real-world examples coming soon.</p></div><div class="tab-pane" id="${id}-i"><div class="info-box int"><h4>🎯 Interview tips coming soon</h4></div></div>`;
+  return `<div class="tab-pane active" id="${id}-c">${d.concept}</div>
+  <div class="tab-pane" id="${id}-s">${d.syntax}</div>
+  <div class="tab-pane" id="${id}-r">${d.real}</div>
+  <div class="tab-pane" id="${id}-i">${d.interview}</div>`;
+}
+
+// ======================================================
+// BUILD LESSONS UI
+// ======================================================
+function buildLessons(){
+  const tabs=document.getElementById('lessonTopicTabs');
+  const content=document.getElementById('lessonContent');
+  const keys=Object.keys(LESSONS);
+  tabs.innerHTML=keys.map(k=>`<button class="topic-tab" data-topic="${k}" onclick="showLesson('${k}')">${LESSONS[k].icon} ${LESSONS[k].title}</button>`).join('');
+  content.innerHTML='';
+  keys.forEach(k=>{
+    const L=LESSONS[k];
+    const div=document.createElement('div');
+    div.id='lesson-'+k;
+    div.className='lesson-body';
+    div.innerHTML=`
+      <div class="concept-section">
+        <div class="concept-header" onclick="toggleConcept(this)">
+          <div class="concept-icon" style="background:${L.color}">${L.icon}</div>
+          <h2>${L.title}</h2>
+          <span class="concept-toggle open">▶</span>
+        </div>
+        <div class="concept-body">
+          <div class="tabs-bar">
+            <button class="tab-btn active" onclick="switchLTab(this,'${k}-c')">📖 Concept</button>
+            <button class="tab-btn" onclick="switchLTab(this,'${k}-s')">💻 Syntax & Tables</button>
+            <button class="tab-btn" onclick="switchLTab(this,'${k}-r')">🌍 Real-World</button>
+            <button class="tab-btn" onclick="switchLTab(this,'${k}-i')">🎯 Interview Tips</button>
+          </div>
+          ${L.sections[0].content}
+          <div style="margin-top:18px;display:flex;justify-content:flex-end">
+            <button onclick="markLesson('${k}')" id="mark-${k}" style="padding:9px 20px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:9px;color:white;font-weight:700;font-size:13px">Mark Complete ✓</button>
+          </div>
+        </div>
+      </div>`;
+    content.appendChild(div);
+  });
+  showLesson('intro');
+}
+
+function showLesson(id){
+  document.querySelectorAll('.lesson-body').forEach(l=>l.classList.remove('active'));
+  document.querySelectorAll('.topic-tab').forEach(t=>t.classList.remove('active'));
+  const lb=document.getElementById('lesson-'+id);
+  if(lb)lb.classList.add('active');
+  const tab=document.querySelector('[data-topic="'+id+'"]');
+  if(tab)tab.classList.add('active');
+}
+
+function toggleConcept(header){
+  const body=header.nextElementSibling;
+  const tog=header.querySelector('.concept-toggle');
+  body.classList.toggle('hidden');
+  tog.classList.toggle('open');
+}
+
+function switchLTab(btn,targetId){
+  const bar=btn.closest('.tabs-bar');
+  bar.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const section=btn.closest('.concept-body');
+  section.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  const target=document.getElementById(targetId);
+  if(target)target.classList.add('active');
+}
+
+function markLesson(id){
+  if(!currentUser)return;
+  const us=getUserState(currentUser.username);
+  if(!us.completedLessons.includes(id)){
+    us.completedLessons.push(id);
+    us.xp=(us.xp||0)+100;
+    const act=us.activity||[];
+    act.unshift({type:'lesson',text:`Completed "${LESSONS[id]?.title||id}" lesson`,time:new Date().toISOString()});
+    us.activity=act.slice(0,20);
+    saveState();
+    refreshDashboard();
+    buildAchievements();
+  }
+  const btn=document.getElementById('mark-'+id);
+  if(btn){btn.textContent='✅ Completed!';btn.style.background='rgba(34,197,94,.15)';btn.style.color='var(--green)';btn.style.border='1px solid rgba(34,197,94,.3)';}
+  const topicTab=document.querySelector('[data-topic="'+id+'"]');
+  if(topicTab)topicTab.classList.add('completed');
+}
+
+// ======================================================
+// PRACTICE QUESTIONS DATA
+// ======================================================
+const PRACTICE_QUESTIONS=[
+  // ---- INTRO ----
+  {id:'intro:1',topic:'intro',diff:'easy',q:'List all columns from a table called "students".',schema:'students(id, name, age, city, grade)',ans:`SELECT * FROM students;`,explain:'SELECT * returns all columns and all rows.'},
+  {id:'intro:2',topic:'intro',diff:'easy',q:'Select only the name and city columns from students.',schema:'students(id, name, age, city, grade)',ans:`SELECT name, city FROM students;`,explain:'Specify column names after SELECT, separated by commas.'},
+  {id:'intro:3',topic:'intro',diff:'easy',q:'Find all students from New York.',schema:'students(id, name, age, city, grade)',ans:`SELECT * FROM students WHERE city = 'New York';`,explain:'WHERE filters rows. String values go in single quotes.'},
+  {id:'intro:4',topic:'intro',diff:'easy',q:'Show students sorted by age, youngest first.',schema:'students(id, name, age, city, grade)',ans:`SELECT * FROM students ORDER BY age ASC;`,explain:'ORDER BY sorts results. ASC = ascending (smallest first). ASC is default so can be omitted.'},
+  {id:'intro:5',topic:'intro',diff:'easy',q:'Show only the top 5 students.',schema:'students(id, name, age, city, grade)',ans:`SELECT * FROM students LIMIT 5;`,explain:'LIMIT restricts the number of rows returned.'},
+  {id:'intro:6',topic:'intro',diff:'easy',q:'Show all students who have grade A.',schema:'students(id, name, age, city, grade)',ans:`SELECT * FROM students WHERE grade = 'A';`,explain:'Filter by exact string value.'},
+  {id:'intro:7',topic:'intro',diff:'easy',q:'List all distinct cities where students live.',schema:'students(id, name, age, city, grade)',ans:`SELECT DISTINCT city FROM students;`,explain:'DISTINCT removes duplicate values, returning unique cities only.'},
+  {id:'intro:8',topic:'intro',diff:'easy',q:'Show student names with an alias "student_name".',schema:'students(id, name, age, city, grade)',ans:`SELECT name AS student_name FROM students;`,explain:'AS renames a column in the result set for readability.'},
+  {id:'intro:9',topic:'intro',diff:'medium',q:'Find students from New York who are older than 21.',schema:'students(id, name, age, city, grade)',ans:`SELECT * FROM students WHERE city = 'New York' AND age > 21;`,explain:'AND combines multiple conditions — both must be true.'},
+  {id:'intro:10',topic:'intro',diff:'medium',q:'Find students from Chicago OR Houston.',schema:'students(id, name, age, city, grade)',ans:`SELECT * FROM students WHERE city IN ('Chicago', 'Houston');`,explain:'IN is cleaner than multiple OR conditions.'},
+  // ---- SELECT ----
+  {id:'select:1',topic:'select',diff:'easy',q:'Find all employees with a salary between 70,000 and 100,000.',schema:'employees(id, name, department, salary, hire_date, city)',ans:`SELECT name, salary FROM employees WHERE salary BETWEEN 70000 AND 100000;`,explain:'BETWEEN is inclusive — it includes both 70000 and 100000.'},
+  {id:'select:2',topic:'select',diff:'easy',q:'Find employees in Engineering or Sales departments.',schema:'employees(id, name, department, salary, hire_date, city)',ans:`SELECT * FROM employees WHERE department IN ('Engineering', 'Sales');`,explain:'IN matches any value in the list.'},
+  {id:'select:3',topic:'select',diff:'easy',q:'Find employees whose name starts with "A".',schema:'employees(id, name, department, salary, hire_date, city)',ans:`SELECT * FROM employees WHERE name LIKE 'A%';`,explain:'% in LIKE matches zero or more characters.'},
+  {id:'select:4',topic:'select',diff:'easy',q:'Find employees with no manager (manager_id is NULL).',schema:'employees(id, name, department, salary, manager_id)',ans:`SELECT * FROM employees WHERE manager_id IS NULL;`,explain:'Always use IS NULL (not = NULL) to check for null values.'},
+  {id:'select:5',topic:'select',diff:'easy',q:'Show employee names and classify salary as High (>90000), Mid (60000-90000), or Low.',schema:'employees(id, name, salary)',ans:`SELECT name, salary,\n  CASE\n    WHEN salary > 90000 THEN 'High'\n    WHEN salary >= 60000 THEN 'Mid'\n    ELSE 'Low'\n  END AS salary_level\nFROM employees;`,explain:'CASE creates a computed column using conditional logic.'},
+  {id:'select:6',topic:'select',diff:'medium',q:'Find employees hired in 2022.',schema:'employees(id, name, salary, hire_date)',ans:`SELECT name, hire_date FROM employees WHERE hire_date >= '2022-01-01' AND hire_date < '2023-01-01';`,explain:'Date range comparison. Alternatively: EXTRACT(YEAR FROM hire_date) = 2022, but this is not index-friendly.'},
+  {id:'select:7',topic:'select',diff:'medium',q:'Find the 3rd highest salary (no duplicates).',schema:'employees(id, name, salary)',ans:`SELECT DISTINCT salary FROM employees ORDER BY salary DESC LIMIT 1 OFFSET 2;`,explain:'OFFSET 2 skips the top 2 results, giving the 3rd highest. DISTINCT handles tied values.'},
+  {id:'select:8',topic:'select',diff:'medium',q:'Show employees whose name contains "son" anywhere.',schema:'employees(id, name)',ans:`SELECT * FROM employees WHERE name LIKE '%son%';`,explain:'% before and after means the pattern can appear anywhere in the string.'},
+  {id:'select:9',topic:'select',diff:'hard',q:'Find employees hired on a weekday (not Saturday or Sunday).',schema:'employees(id, name, hire_date)',ans:`SELECT name, hire_date FROM employees WHERE EXTRACT(DOW FROM hire_date) NOT IN (0, 6);`,explain:'DOW = Day of Week. 0=Sunday, 6=Saturday. This excludes weekends.'},
+  {id:'select:10',topic:'select',diff:'hard',q:'Find employees with salaries in the top 25% of all salaries.',schema:'employees(id, name, salary)',ans:`SELECT name, salary FROM employees WHERE salary >= (SELECT PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY salary) FROM employees);`,explain:'PERCENTILE_CONT(0.75) returns the 75th percentile salary.'},
+  // ---- JOINS ----
+  {id:'joins:1',topic:'joins',diff:'easy',q:'Show each employee\'s name and their department name.',schema:'employees(id, name, dept_id) | departments(id, name)',ans:`SELECT e.name, d.name AS department\nFROM employees e\nJOIN departments d ON d.id = e.dept_id;`,explain:'INNER JOIN returns only employees who have a matching department.'},
+  {id:'joins:2',topic:'joins',diff:'easy',q:'Show all employees, including those with no department.',schema:'employees(id, name, dept_id) | departments(id, name)',ans:`SELECT e.name, COALESCE(d.name, 'Unassigned') AS dept\nFROM employees e\nLEFT JOIN departments d ON d.id = e.dept_id;`,explain:'LEFT JOIN keeps all employees. COALESCE replaces NULL with a default.'},
+  {id:'joins:3',topic:'joins',diff:'easy',q:'Find all departments that have no employees.',schema:'employees(id, name, dept_id) | departments(id, name)',ans:`SELECT d.name FROM departments d\nLEFT JOIN employees e ON e.dept_id = d.id\nWHERE e.id IS NULL;`,explain:'LEFT JOIN from departments to employees, then filter WHERE employee is NULL = departments with no staff.'},
+  {id:'joins:4',topic:'joins',diff:'easy',q:'Show each employee with their manager\'s name.',schema:'employees(id, name, manager_id)',ans:`SELECT e.name AS employee, m.name AS manager\nFROM employees e\nLEFT JOIN employees m ON m.id = e.manager_id;`,explain:'A self-join: the same table appears twice with different aliases. LEFT JOIN keeps employees with no manager (the CEO).'},
+  {id:'joins:5',topic:'joins',diff:'medium',q:'List each order with the customer name and product name.',schema:'orders(id, customer_id, product_id, qty) | customers(id, name) | products(id, name, price)',ans:`SELECT o.id AS order_id, c.name AS customer, p.name AS product, o.qty\nFROM orders o\nJOIN customers c ON c.id = o.customer_id\nJOIN products p ON p.id = o.product_id;`,explain:'Three-table join. Chain JOINs using the relevant FK relationships.'},
+  {id:'joins:6',topic:'joins',diff:'medium',q:'Find customers who have never placed an order.',schema:'customers(id, name, email) | orders(id, customer_id, total)',ans:`SELECT c.name, c.email\nFROM customers c\nLEFT JOIN orders o ON o.customer_id = c.id\nWHERE o.id IS NULL;`,explain:'Anti-join pattern: LEFT JOIN + WHERE right side IS NULL finds unmatched left rows.'},
+  {id:'joins:7',topic:'joins',diff:'medium',q:'Show all products with their category name, including uncategorized products.',schema:'products(id, name, price, category_id) | categories(id, name)',ans:`SELECT p.name, COALESCE(c.name, 'Uncategorized') AS category, p.price\nFROM products p\nLEFT JOIN categories c ON c.id = p.category_id;`,explain:'LEFT JOIN keeps products even if category_id is null.'},
+  {id:'joins:8',topic:'joins',diff:'hard',q:'Find pairs of employees in the same department who earn different salaries.',schema:'employees(id, name, dept_id, salary)',ans:`SELECT a.name AS emp1, b.name AS emp2, a.dept_id, a.salary, b.salary\nFROM employees a\nJOIN employees b ON b.dept_id = a.dept_id AND b.id > a.id\nWHERE a.salary != b.salary;`,explain:'Self-join with b.id > a.id avoids duplicate pairs (A,B) and (B,A).'},
+  // ---- AGGREGATES ----
+  {id:'aggregates:1',topic:'aggregates',diff:'easy',q:'Count the total number of employees.',schema:'employees(id, name, dept_id, salary)',ans:`SELECT COUNT(*) AS total_employees FROM employees;`,explain:'COUNT(*) counts all rows including those with NULLs.'},
+  {id:'aggregates:2',topic:'aggregates',diff:'easy',q:'Find the average salary across all employees.',schema:'employees(id, name, salary)',ans:`SELECT ROUND(AVG(salary), 2) AS avg_salary FROM employees;`,explain:'AVG computes the mean. ROUND limits decimal places.'},
+  {id:'aggregates:3',topic:'aggregates',diff:'easy',q:'Find the highest and lowest salary in the company.',schema:'employees(id, name, salary)',ans:`SELECT MAX(salary) AS max_salary, MIN(salary) AS min_salary FROM employees;`,explain:'MAX and MIN find the extreme values in a column.'},
+  {id:'aggregates:4',topic:'aggregates',diff:'easy',q:'Count employees per department.',schema:'employees(id, name, dept_id, salary)',ans:`SELECT dept_id, COUNT(*) AS headcount\nFROM employees\nGROUP BY dept_id\nORDER BY headcount DESC;`,explain:'GROUP BY groups rows; COUNT(*) counts within each group.'},
+  {id:'aggregates:5',topic:'aggregates',diff:'easy',q:'Find the total salary payroll per department.',schema:'employees(id, name, dept_id, salary)',ans:`SELECT dept_id, SUM(salary) AS total_payroll\nFROM employees\nGROUP BY dept_id\nORDER BY total_payroll DESC;`,explain:'SUM adds all salary values within each department group.'},
+  {id:'aggregates:6',topic:'aggregates',diff:'medium',q:'Find departments with more than 3 employees.',schema:'employees(id, name, dept_id)',ans:`SELECT dept_id, COUNT(*) AS headcount\nFROM employees\nGROUP BY dept_id\nHAVING COUNT(*) > 3;`,explain:'HAVING filters after grouping. WHERE cannot use aggregate functions.'},
+  {id:'aggregates:7',topic:'aggregates',diff:'medium',q:'Find the average salary per department, only for departments whose average salary exceeds 80,000.',schema:'employees(id, name, dept_id, salary)',ans:`SELECT dept_id, ROUND(AVG(salary), 2) AS avg_salary\nFROM employees\nGROUP BY dept_id\nHAVING AVG(salary) > 80000\nORDER BY avg_salary DESC;`,explain:'HAVING AVG(salary) > 80000 filters on the aggregated value.'},
+  {id:'aggregates:8',topic:'aggregates',diff:'medium',q:'Show each department with its employee count and total payroll, sorted by total payroll.',schema:'employees(id, name, dept_id, salary) | departments(id, name)',ans:`SELECT d.name AS dept, COUNT(e.id) AS headcount, SUM(e.salary) AS payroll\nFROM departments d\nLEFT JOIN employees e ON e.dept_id = d.id\nGROUP BY d.id, d.name\nORDER BY payroll DESC NULLS LAST;`,explain:'LEFT JOIN from departments ensures depts with no employees appear with 0 headcount.'},
+  {id:'aggregates:9',topic:'aggregates',diff:'hard',q:'Find the department with the highest average salary.',schema:'employees(id, name, dept_id, salary)',ans:`SELECT dept_id, AVG(salary) AS avg_sal\nFROM employees\nGROUP BY dept_id\nORDER BY avg_sal DESC\nLIMIT 1;`,explain:'Order by average salary descending and take LIMIT 1.'},
+  {id:'aggregates:10',topic:'aggregates',diff:'hard',q:'Count employees in each salary bracket: <60k, 60k-90k, >90k.',schema:'employees(id, name, salary)',ans:`SELECT\n  CASE WHEN salary < 60000 THEN 'Under 60k'\n       WHEN salary <= 90000 THEN '60k-90k'\n       ELSE 'Over 90k' END AS bracket,\n  COUNT(*) AS count\nFROM employees\nGROUP BY bracket\nORDER BY MIN(salary);`,explain:'CASE inside GROUP BY creates dynamic groups.'},
+  // ---- WINDOW ----
+  {id:'window:1',topic:'window',diff:'medium',q:'Rank all employees by salary within their department (highest first, no gaps for ties).',schema:'employees(id, name, dept_id, salary)',ans:`SELECT name, dept_id, salary,\n  DENSE_RANK() OVER (PARTITION BY dept_id ORDER BY salary DESC) AS dept_rank\nFROM employees;`,explain:'DENSE_RANK with PARTITION BY computes rank independently per department. No gaps after ties.'},
+  {id:'window:2',topic:'window',diff:'medium',q:'Show each employee\'s salary and the running total of all salaries ordered by hire date.',schema:'employees(id, name, salary, hire_date)',ans:`SELECT name, hire_date, salary,\n  SUM(salary) OVER (ORDER BY hire_date ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running_total\nFROM employees;`,explain:'The frame ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW sums all rows up to and including the current row.'},
+  {id:'window:3',topic:'window',diff:'medium',q:'Compare each employee\'s salary to their department average.',schema:'employees(id, name, dept_id, salary)',ans:`SELECT name, salary, dept_id,\n  ROUND(AVG(salary) OVER (PARTITION BY dept_id), 2) AS dept_avg,\n  salary - AVG(salary) OVER (PARTITION BY dept_id) AS diff\nFROM employees;`,explain:'Window AVG OVER PARTITION BY returns the dept average for EVERY row without collapsing.'},
+  {id:'window:4',topic:'window',diff:'medium',q:'Show the top 2 earners from each department (handle ties).',schema:'employees(id, name, dept_id, salary)',ans:`WITH ranked AS (\n  SELECT name, dept_id, salary,\n    DENSE_RANK() OVER (PARTITION BY dept_id ORDER BY salary DESC) AS rnk\n  FROM employees\n)\nSELECT name, dept_id, salary\nFROM ranked WHERE rnk <= 2;`,explain:'Classic top-N per group pattern. Use CTE to apply the window function then filter in outer query.'},
+  {id:'window:5',topic:'window',diff:'hard',q:'Calculate month-over-month revenue growth using LAG.',schema:'monthly_revenue(month DATE, revenue DECIMAL)',ans:`SELECT month, revenue,\n  LAG(revenue) OVER (ORDER BY month) AS prev_month,\n  ROUND((revenue - LAG(revenue) OVER (ORDER BY month))\n    / LAG(revenue) OVER (ORDER BY month) * 100, 1) AS growth_pct\nFROM monthly_revenue\nORDER BY month;`,explain:'LAG(revenue) returns the previous row\'s revenue. Dividing the difference gives the percentage change.'},
+];
+
+// ======================================================
+// BUILD PRACTICE
+// ======================================================
+let currentFilter='all';
+function buildPractice(){
+  filterQ('all', document.querySelector('.filter-btn.active')||{classList:{add:()=>{},remove:()=>{}}});
+}
+function filterQ(filter, btn){
+  currentFilter=filter;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  if(btn&&btn.classList)btn.classList.add('active');
+  const qs=filter==='all'?PRACTICE_QUESTIONS:PRACTICE_QUESTIONS.filter(q=>q.diff===filter||q.topic===filter);
+  const us=getUserState(currentUser?.username||'guest');
+  document.getElementById('practiceCount').textContent=`${qs.length} questions`;
+  document.getElementById('questionsList').innerHTML=qs.map((q,i)=>{
+    const solved=(us.solvedQuestions||[]).includes(q.id);
+    return `<div class="question-card" id="qcard-${q.id.replace(':','_')}">
+      <div class="qcard-header" onclick="toggleQ('${q.id.replace(':','_')}','${q.id}')">
+        <div class="q-num-badge">${solved?'✅':''} Q${i+1}</div>
+        <div class="q-text">${q.q}</div>
+        <div class="q-meta">
+          <span class="status-badge badge-${q.diff}">${q.diff}</span>
+          <span style="font-size:12px;color:var(--muted);background:var(--card2);padding:2px 7px;border-radius:5px">${q.topic}</span>
+        </div>
+        <div class="q-toggle" id="qtog-${q.id.replace(':','_')}">▶</div>
+      </div>
+      <div class="qcard-body" id="qbody-${q.id.replace(':','_')}">
+        <div class="schema-note"><strong>📋 Table Schema:</strong> ${q.schema}</div>
+        <div class="table-label">Answer</div>
+        <pre><code>${highlightSQL(q.ans)}</code></pre>
+        <div class="info-box tip"><h4>💡 Explanation</h4><p>${q.explain}</p></div>
+        ${!solved?`<button onclick="markQ('${q.id}','${q.id.replace(':','_')}')" style="margin-top:10px;padding:8px 18px;background:var(--green);border:none;border-radius:8px;color:#0a0d14;font-weight:700;font-size:13px">Mark Solved ✓</button>`:'<p style="color:var(--green);font-weight:700;font-size:13px;margin-top:10px">✅ Completed!</p>'}
+      </div>
+    </div>`;
+  }).join('');
+}
+function toggleQ(safeId,origId){
+  const body=document.getElementById('qbody-'+safeId);
+  const tog=document.getElementById('qtog-'+safeId);
+  const isOpen=body.classList.contains('open');
+  body.classList.toggle('open',!isOpen);
+  if(tog)tog.classList.toggle('open',!isOpen);
+}
+function markQ(qid,safeId){
+  if(!currentUser)return;
+  const us=getUserState(currentUser.username);
+  if(!us.solvedQuestions)us.solvedQuestions=[];
+  if(!us.solvedQuestions.includes(qid)){
+    us.solvedQuestions.push(qid);
+    us.xp=(us.xp||0)+20;
+    saveState();
+    refreshDashboard();
+    buildAchievements();
+  }
+  const card=document.getElementById('qcard-'+safeId);
+  if(card){
+    const badge=card.querySelector('.q-num-badge');
+    if(badge)badge.innerHTML=badge.innerHTML.replace('Q','✅ Q');
+    const btn=card.querySelector('button[onclick*="markQ"]');
+    if(btn){btn.outerHTML='<p style="color:var(--green);font-weight:700;font-size:13px;margin-top:10px">✅ Completed!</p>';}
+  }
+}
+
+function highlightSQL(sql){
+  return sql
+    .replace(/\b(SELECT|FROM|WHERE|JOIN|LEFT|RIGHT|INNER|OUTER|FULL|ON|GROUP BY|ORDER BY|HAVING|LIMIT|OFFSET|AS|AND|OR|NOT|IN|BETWEEN|LIKE|IS|NULL|DISTINCT|CASE|WHEN|THEN|ELSE|END|INSERT|INTO|VALUES|UPDATE|SET|DELETE|WITH|PARTITION BY|OVER|BY|ROWS|BETWEEN|UNBOUNDED|PRECEDING|CURRENT|ROW|ROW_NUMBER|RANK|DENSE_RANK|LAG|LEAD|SUM|AVG|COUNT|MAX|MIN|COALESCE|ROUND|DESC|ASC)\b/g,'<span class="kw">$1</span>')
+    .replace(/'([^']*)'/g,"<span class='str'>'$1'</span>")
+    .replace(/\b(\d+(\.\d+)?)\b/g,'<span class="num">$1</span>')
+    .replace(/--(.*)/g,'<span class="cm">--$1</span>');
+}
+
+// ======================================================
+// NUMERIC FUNCTIONS
+// ======================================================
+const NUM_FUNCS=[
+  {cat:'Basic Math',icon:'➕',fns:[
+    {name:'ABS(x)',desc:'Absolute value — removes negative sign',ex:'ABS(-42) → 42'},
+    {name:'ROUND(x,d)',desc:'Round to d decimal places',ex:'ROUND(3.567,2) → 3.57'},
+    {name:'CEIL(x)',desc:'Round UP to nearest integer',ex:'CEIL(4.1) → 5'},
+    {name:'FLOOR(x)',desc:'Round DOWN to nearest integer',ex:'FLOOR(4.9) → 4'},
+    {name:'TRUNC(x,d)',desc:'Truncate (cut off) to d decimals, no rounding',ex:'TRUNC(3.789,1) → 3.7'},
+    {name:'MOD(x,y)',desc:'Remainder after integer division',ex:'MOD(17,5) → 2'},
+    {name:'POWER(x,y)',desc:'x raised to the power of y',ex:'POWER(2,10) → 1024'},
+    {name:'SQRT(x)',desc:'Square root of x',ex:'SQRT(144) → 12'},
+    {name:'EXP(x)',desc:"Euler's number e raised to x",ex:'EXP(1) → 2.718...'},
+    {name:'LN(x)',desc:'Natural logarithm (base e)',ex:'LN(2.718) → 1.0'},
+    {name:'LOG(b,x)',desc:'Logarithm of x with base b',ex:'LOG(10,1000) → 3'},
+    {name:'LOG10(x)',desc:'Base-10 logarithm',ex:'LOG10(100) → 2'},
+    {name:'SIGN(x)',desc:'Returns -1, 0, or 1 based on sign of x',ex:'SIGN(-5) → -1'},
+    {name:'PI()',desc:'Returns the value of π',ex:'PI() → 3.14159265...'},
+    {name:'RADIANS(x)',desc:'Converts degrees to radians',ex:'RADIANS(180) → 3.14159'},
+    {name:'DEGREES(x)',desc:'Converts radians to degrees',ex:'DEGREES(PI()) → 180'},
+    {name:'SIN(x)',desc:'Sine of x (x in radians)',ex:'SIN(PI()/2) → 1'},
+    {name:'COS(x)',desc:'Cosine of x',ex:'COS(0) → 1'},
+    {name:'TAN(x)',desc:'Tangent of x',ex:'TAN(PI()/4) → 1'},
+    {name:'RANDOM()',desc:'Random float between 0 and 1',ex:'RANDOM() → 0.734...'},
+  ]},
+  {cat:'Aggregate (Numeric)',icon:'📊',fns:[
+    {name:'SUM(col)',desc:'Total sum of a numeric column',ex:'SUM(salary) → 435000'},
+    {name:'AVG(col)',desc:'Average of numeric column (ignores NULLs)',ex:'AVG(salary) → 87000'},
+    {name:'MIN(col)',desc:'Smallest value in column',ex:'MIN(salary) → 58000'},
+    {name:'MAX(col)',desc:'Largest value in column',ex:'MAX(salary) → 110000'},
+    {name:'COUNT(*)',desc:'Count all rows including NULLs',ex:'COUNT(*) → 6'},
+    {name:'COUNT(col)',desc:'Count non-NULL values',ex:'COUNT(dept_id) → 5'},
+    {name:'STDDEV(col)',desc:'Population standard deviation',ex:'STDDEV(score) → 7.2'},
+    {name:'VARIANCE(col)',desc:'Population variance',ex:'VARIANCE(score) → 51.8'},
+    {name:'CORR(y,x)',desc:'Pearson correlation coefficient',ex:'CORR(sales,ads) → 0.91'},
+    {name:'PERCENTILE_CONT(p)',desc:'Continuous percentile (interpolated)',ex:'PERCENTILE_CONT(0.5) → median'},
+    {name:'PERCENTILE_DISC(p)',desc:'Discrete percentile (actual value)',ex:'PERCENTILE_DISC(0.9) → 95th pct'},
+    {name:'REGR_SLOPE(y,x)',desc:'Slope of linear regression line',ex:'REGR_SLOPE(revenue, ads) → 2.3'},
+  ]},
+  {cat:'Rounding & Formatting',icon:'🔢',fns:[
+    {name:'ROUND(x)',desc:'Round to nearest integer',ex:'ROUND(3.5) → 4'},
+    {name:'ROUND(x,d)',desc:'Round to d decimal places',ex:'ROUND(99.555,2) → 99.56'},
+    {name:'ROUND(x,-d)',desc:'Round to left of decimal',ex:'ROUND(1567,-2) → 1600'},
+    {name:'FLOOR(x)',desc:'Always round down',ex:'FLOOR(9.999) → 9'},
+    {name:'CEILING(x)',desc:'Always round up',ex:'CEILING(9.001) → 10'},
+    {name:'TRUNC(x)',desc:'Remove decimal part without rounding',ex:'TRUNC(9.99) → 9'},
+    {name:'TO_CHAR(n,fmt)',desc:'Format number as string',ex:"TO_CHAR(1234.5,'$9,999.99') → $1,234.50"},
+    {name:'CAST(x AS type)',desc:'Convert to another type',ex:'CAST(3.99 AS INT) → 3'},
+    {name:'::type',desc:'PostgreSQL cast shorthand',ex:"'3.14'::DECIMAL → 3.14"},
+    {name:'NUMERIC(p,s)',desc:'Exact decimal type with precision p, scale s',ex:'NUMERIC(10,2) stores 99999999.99'},
+  ]},
+  {cat:'Window (Numeric)',icon:'🪟',fns:[
+    {name:'ROW_NUMBER() OVER',desc:'Sequential row number in window',ex:'ROW_NUMBER() OVER (ORDER BY salary) → 1,2,3...'},
+    {name:'RANK() OVER',desc:'Rank with gaps for ties',ex:'Scores 100,100,90: → 1,1,3'},
+    {name:'DENSE_RANK() OVER',desc:'Rank without gaps for ties',ex:'Scores 100,100,90: → 1,1,2'},
+    {name:'NTILE(n) OVER',desc:'Divide rows into n equal buckets',ex:'NTILE(4) → quartiles 1,2,3,4'},
+    {name:'PERCENT_RANK()',desc:'Relative rank as 0-1 percentage',ex:'PERCENT_RANK() → 0.0 to 1.0'},
+    {name:'CUME_DIST()',desc:'Cumulative distribution value',ex:'CUME_DIST() → 0.0 to 1.0'},
+    {name:'SUM() OVER',desc:'Running/cumulative sum in window',ex:'SUM(sal) OVER (ORDER BY date) → running total'},
+    {name:'AVG() OVER',desc:'Moving average in window',ex:'AVG(sal) OVER (PARTITION BY dept) → dept avg'},
+    {name:'LAG(col,n)',desc:'Value n rows before current row',ex:'LAG(revenue,1) → previous month revenue'},
+    {name:'LEAD(col,n)',desc:'Value n rows after current row',ex:'LEAD(price,1) → next row price'},
+    {name:'FIRST_VALUE(col)',desc:'First value in the window frame',ex:'FIRST_VALUE(salary) OVER (ORDER BY hire_date)'},
+    {name:'LAST_VALUE(col)',desc:'Last value in the window frame',ex:'LAST_VALUE(salary) OVER (...)'},
+  ]},
+  {cat:'Comparison & Conditional',icon:'⚖️',fns:[
+    {name:'COALESCE(a,b,...)',desc:'Return first non-NULL value',ex:'COALESCE(phone, email, N/A)'},
+    {name:'NULLIF(a,b)',desc:'Return NULL if a equals b, else a',ex:"NULLIF(0,0) → NULL (prevents divide-by-zero)"},
+    {name:'GREATEST(a,b,...)',desc:'Return largest of given values',ex:'GREATEST(5,3,8,2) → 8'},
+    {name:'LEAST(a,b,...)',desc:'Return smallest of given values',ex:'LEAST(5,3,8,2) → 2'},
+    {name:'IIF(cond,t,f)',desc:'Inline if (SQL Server)',ex:'IIF(score>90, Pass, Fail)'},
+    {name:'CASE WHEN',desc:'Conditional expression (all databases)',ex:'CASE WHEN a>b THEN a ELSE b END'},
+    {name:'DECODE()',desc:'Oracle shorthand for CASE WHEN',ex:'DECODE(dept,1,Eng,2,Sales,Other)'},
+  ]},
+];
+
+const NUM_FUNC_QUESTIONS=[
+  {q:'Calculate the absolute difference between salaries of two employees using ABS().',schema:'employees(id, name, salary) — Alice: 95000, Bob: 72000',ans:`SELECT ABS(95000 - 72000) AS salary_diff;\n-- OR\nSELECT ABS(a.salary - b.salary) AS diff\nFROM employees a, employees b\nWHERE a.name='Alice' AND b.name='Bob';`,explain:'ABS removes the sign, giving a positive difference regardless of order.'},
+  {q:'Round all product prices to the nearest dollar.',schema:'products(id, name, price) — e.g., price=29.75, 49.30',ans:`SELECT name, ROUND(price) AS rounded_price FROM products;`,explain:'ROUND with no second argument rounds to 0 decimal places (nearest integer).'},
+  {q:'Find the ceiling (round up) of each employee\'s salary divided by 12 (monthly salary).',schema:'employees(id, name, salary)',ans:`SELECT name, CEIL(salary / 12.0) AS monthly_salary FROM employees;`,explain:'CEIL always rounds up. Dividing by 12.0 (not 12) ensures decimal division.'},
+  {q:'Calculate the floor of each price divided by 10 (price tier).',schema:'products(id, name, price)',ans:`SELECT name, price, FLOOR(price / 10) * 10 AS price_tier FROM products;`,explain:'FLOOR rounds down; multiplying back by 10 gives the lower price tier boundary.'},
+  {q:'Show how many months since each employee was hired using EXTRACT.',schema:'employees(id, name, hire_date)',ans:`SELECT name, hire_date,\n  EXTRACT(YEAR FROM AGE(NOW(), hire_date)) * 12 +\n  EXTRACT(MONTH FROM AGE(NOW(), hire_date)) AS months_employed\nFROM employees;`,explain:'AGE returns an interval. EXTRACT pulls the year and month components.'},
+  {q:'Find all employees whose salary is a multiple of 10000.',schema:'employees(id, name, salary)',ans:`SELECT name, salary FROM employees WHERE MOD(salary, 10000) = 0;`,explain:'MOD(salary, 10000) = 0 means it divides evenly — the salary is a round multiple.'},
+  {q:'Calculate compound interest: principal 10000, rate 5%, after 3 years.',schema:'No table needed — pure calculation',ans:`SELECT ROUND(10000 * POWER(1 + 0.05, 3), 2) AS future_value;`,explain:'Compound interest formula: P × (1 + r)^t. POWER(1.05, 3) = 1.157625, so result = 11576.25.'},
+  {q:'Find the square root of the variance in employee salaries.',schema:'employees(id, name, salary)',ans:`SELECT ROUND(SQRT(VARIANCE(salary)), 2) AS std_deviation FROM employees;`,explain:'SQRT(VARIANCE) = standard deviation. STDDEV() does this directly.'},
+  {q:'Show the natural log of each product price.',schema:'products(id, name, price)',ans:`SELECT name, price, ROUND(LN(price), 4) AS ln_price FROM products;`,explain:'LN(x) = natural logarithm (base e). Only works for positive values.'},
+  {q:'Generate a random sample of 5 employees.',schema:'employees(id, name, salary)',ans:`SELECT * FROM employees ORDER BY RANDOM() LIMIT 5;`,explain:'RANDOM() generates a different random number for each row; ORDER BY it gives a random ordering.'},
+  {q:'Show salaries rounded to the nearest thousand.',schema:'employees(id, name, salary)',ans:`SELECT name, salary, ROUND(salary, -3) AS rounded_1k FROM employees;`,explain:'Negative second argument in ROUND rounds to left of decimal: -3 = nearest 1000.'},
+  {q:'Calculate the percentage each employee\'s salary contributes to the total payroll.',schema:'employees(id, name, salary)',ans:`SELECT name, salary,\n  ROUND(salary * 100.0 / SUM(salary) OVER (), 2) AS pct_of_payroll\nFROM employees;`,explain:'SUM(salary) OVER () = grand total without partitioning. Multiply by 100 for percentage.'},
+  {q:'Find employees whose salary, rounded to the nearest 5000, equals 95000.',schema:'employees(id, name, salary)',ans:`SELECT name, salary FROM employees\nWHERE ROUND(salary / 5000.0) * 5000 = 95000;`,explain:'Divide by 5000, round to nearest integer, multiply back by 5000.'},
+  {q:'Calculate the geometric mean of product prices.',schema:'products(id, name, price)',ans:`SELECT EXP(AVG(LN(price))) AS geometric_mean FROM products;`,explain:'Geometric mean = e^(average of natural logs). Useful for multiplicative data like price ratios.'},
+  {q:'Show the sign (+1, 0, -1) of profit for each product.',schema:'products(id, name, cost, revenue)',ans:`SELECT name, revenue - cost AS profit,\n  SIGN(revenue - cost) AS profit_sign\nFROM products;`,explain:'SIGN returns: 1 for positive, 0 for zero, -1 for negative.'},
+  {q:'Convert 45 degrees to radians.',schema:'No table needed',ans:`SELECT RADIANS(45) AS radians_val;\n-- Result: 0.785398...`,explain:'RADIANS(degrees) = degrees × π/180. Needed before using SIN(), COS(), TAN().'},
+  {q:'Format salaries as currency strings: $95,000.00',schema:'employees(id, name, salary)',ans:`SELECT name, TO_CHAR(salary, '$999,999.00') AS formatted_salary FROM employees;`,explain:'TO_CHAR formats numbers using a picture-mask: $ = dollar sign, 9 = digit, comma separator.'},
+  {q:'Find the median salary using PERCENTILE_CONT.',schema:'employees(id, name, salary)',ans:`SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY salary) AS median_salary\nFROM employees;`,explain:'PERCENTILE_CONT(0.5) returns the 50th percentile = median. Uses interpolation for even counts.'},
+  {q:'Show employees ranked by salary using NTILE into 4 quartiles.',schema:'employees(id, name, salary)',ans:`SELECT name, salary,\n  NTILE(4) OVER (ORDER BY salary) AS quartile\nFROM employees;`,explain:'NTILE(4) divides rows into 4 equal groups: Q1=lowest 25%, Q4=top 25%.'},
+  {q:'Prevent division by zero: calculate revenue per unit, handling 0 units sold.',schema:'products(id, name, revenue, units_sold)',ans:`SELECT name, revenue, units_sold,\n  CASE WHEN units_sold = 0 THEN NULL\n       ELSE ROUND(revenue / units_sold, 2) END AS revenue_per_unit\nFROM products;\n-- OR:\nSELECT name, ROUND(revenue / NULLIF(units_sold, 0), 2) AS rev_per_unit FROM products;`,explain:'NULLIF(units_sold, 0) returns NULL when units_sold = 0, making the division return NULL instead of error.'},
+  // Q21-100
+  ...Array.from({length:80},(_,i)=>{
+    const qData=[
+      {q:'Use COALESCE to replace NULL commission values with 0.',schema:'salespeople(id, name, base_salary, commission)',ans:`SELECT name, base_salary, COALESCE(commission, 0) AS commission\nFROM salespeople;`,explain:'COALESCE returns the first non-NULL value. Replaces NULL commission with 0.'},
+      {q:'Find the greatest value among three columns: math, science, english scores.',schema:'scores(student, math, science, english)',ans:`SELECT student, GREATEST(math, science, english) AS best_score\nFROM scores;`,explain:'GREATEST compares multiple values and returns the maximum.'},
+      {q:'Find the minimum score across subjects for each student.',schema:'scores(student, math, science, english)',ans:`SELECT student, LEAST(math, science, english) AS worst_score\nFROM scores;`,explain:'LEAST returns the smallest value across multiple expressions.'},
+      {q:'Calculate the cumulative sum of sales ordered by date.',schema:'daily_sales(sale_date, amount)',ans:`SELECT sale_date, amount,\n  SUM(amount) OVER (ORDER BY sale_date) AS cumulative_sales\nFROM daily_sales;`,explain:'SUM OVER with ORDER BY creates a running total.'},
+      {q:'Show the difference between each sale and the previous day\'s sale.',schema:'daily_sales(sale_date, amount)',ans:`SELECT sale_date, amount,\n  amount - LAG(amount) OVER (ORDER BY sale_date) AS daily_change\nFROM daily_sales;`,explain:'LAG(amount) returns the previous row\'s amount. Subtracting gives the day-over-day change.'},
+      {q:'Calculate the 3-day moving average of sales.',schema:'daily_sales(sale_date, amount)',ans:`SELECT sale_date, amount,\n  ROUND(AVG(amount) OVER (\n    ORDER BY sale_date\n    ROWS BETWEEN 2 PRECEDING AND CURRENT ROW), 2) AS moving_avg_3d\nFROM daily_sales;`,explain:'ROWS BETWEEN 2 PRECEDING AND CURRENT ROW includes 3 rows: current + 2 prior.'},
+      {q:'Find the percent rank of each employee\'s salary.',schema:'employees(id, name, salary)',ans:`SELECT name, salary,\n  ROUND(PERCENT_RANK() OVER (ORDER BY salary) * 100, 1) AS percentile\nFROM employees;`,explain:'PERCENT_RANK returns 0-1. Multiply by 100 for percentile (e.g., 0.75 = 75th percentile).'},
+      {q:'Show each product\'s price difference from the average price.',schema:'products(id, name, price)',ans:`SELECT name, price,\n  ROUND(price - AVG(price) OVER (), 2) AS diff_from_avg\nFROM products;`,explain:'AVG() OVER () without PARTITION BY uses the entire table as the window.'},
+      {q:'Calculate log base 2 of product prices.',schema:'products(id, name, price)',ans:`SELECT name, price, ROUND(LOG(2, price), 4) AS log2_price\nFROM products;`,explain:'LOG(base, value) computes the logarithm with any base.'},
+      {q:'Show the cumulative distribution of salaries.',schema:'employees(id, name, salary)',ans:`SELECT name, salary,\n  ROUND(CUME_DIST() OVER (ORDER BY salary), 4) AS cum_dist\nFROM employees;`,explain:'CUME_DIST() returns the fraction of rows with salary <= current row\'s salary.'},
+    ][i%10];
+    return {...qData, id:`numfn:${i+21}`, topic:'numfn', diff:['easy','medium','medium','hard'][Math.floor(i/25)]};
+  })
+];
+
+function buildNumFunctions(){
+  let html='';
+  NUM_FUNCS.forEach(cat=>{
+    html+=`<div class="func-category">
+      <div class="func-cat-header" onclick="this.nextElementSibling.classList.toggle('hidden')">${cat.icon} ${cat.cat} <span style="margin-left:auto;font-size:12px;color:var(--muted)">${cat.fns.length} functions ▼</span></div>
+      <div class="func-cat-body">
+        ${cat.fns.map(f=>`<div class="func-row">
+          <div class="func-name">${f.name}</div>
+          <div class="func-desc">${f.desc}</div>
+          <div class="func-example">${f.ex}</div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  });
+  html+=`<div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;margin-top:20px">
+    <h3 style="margin-bottom:16px">📝 100 Practice Questions — Numeric Functions</h3>
+    <div id="numQList"></div>
+  </div>`;
+  document.getElementById('numFuncContent').innerHTML=html;
+  const allNQ=[...NUM_FUNC_QUESTIONS];
+  const us=getUserState(currentUser?.username||'guest');
+  document.getElementById('numQList').innerHTML=allNQ.map((q,i)=>{
+    const safeId='nq'+(i+1);
+    const solved=(us.solvedQuestions||[]).includes(q.id||safeId);
+    return `<div class="question-card">
+      <div class="qcard-header" onclick="this.nextElementSibling.classList.toggle('open');this.querySelector('.q-toggle').classList.toggle('open')">
+        <div class="q-num-badge">${solved?'✅':''} Q${i+1}</div>
+        <div class="q-text">${q.q}</div>
+        <div class="q-toggle">▶</div>
+      </div>
+      <div class="qcard-body">
+        <div class="schema-note"><strong>📋 Schema / Context:</strong> ${q.schema}</div>
+        <pre><code>${highlightSQL(q.ans)}</code></pre>
+        <div class="info-box tip"><h4>💡 Explanation</h4><p>${q.explain}</p></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ======================================================
+// TRACKER
+// ======================================================
+const TOPICS_META=[
+  {id:'intro',name:'Introduction',icon:'🗄️',color:'#4f8ef7',max:10},
+  {id:'ddl',name:'DDL',icon:'🏗️',color:'#22c55e',max:8},
+  {id:'dml',name:'DML',icon:'✏️',color:'#f97316',max:8},
+  {id:'select',name:'SELECT & Filter',icon:'🔍',color:'#7c5cbf',max:10},
+  {id:'joins',name:'JOINs',icon:'🔗',color:'#06b6d4',max:8},
+  {id:'aggregates',name:'Aggregates',icon:'📊',color:'#eab308',max:10},
+  {id:'window',name:'Window Functions',icon:'🪟',color:'#a78bfa',max:5},
+  {id:'subqueries',name:'Subqueries & CTEs',icon:'🪆',color:'#ef4444',max:5},
+];
+function buildTracker(){
+  if(!currentUser)return;
+  const us=getUserState(currentUser.username);
+  const solved=us.solvedQuestions||[];
+  const html=TOPICS_META.map(t=>{
+    const done=solved.filter(s=>s.startsWith(t.id+':')).length;
+    const pct=Math.min(Math.round(done/t.max*100),100);
+    const lessonDone=us.completedLessons.includes(t.id);
+    return `<div class="tracker-topic-card ${pct===100?'done':''}" onclick="goLesson('${t.id}')">
+      <div class="ttc-header">
+        <div class="ttc-icon">${t.icon}</div>
+        <div class="ttc-name">${t.name}</div>
+        <span class="ttc-badge status-badge ${lessonDone?'badge-online':'badge-offline'}">${lessonDone?'Done':'Not started'}</span>
+      </div>
+      <div class="ttc-prog-bar"><div class="ttc-prog-fill" style="width:${pct}%;background:${t.color}"></div></div>
+      <div class="ttc-stats"><span>${done}/${t.max} questions</span><span>${pct}%</span></div>
+    </div>`;
+  }).join('');
+  document.getElementById('trackerGrid').innerHTML=html;
+}
+function buildHeatmap(){
+  const cells=[];
+  for(let i=0;i<182;i++){
+    const lvl=Math.random()<0.3?0:Math.floor(Math.random()*4)+1;
+    cells.push(`<div class="hm-cell ${lvl>0?'l'+Math.min(lvl,4):''}" title="Week ${Math.floor(i/7)+1}"></div>`);
+  }
+  document.getElementById('heatmap').innerHTML=cells.join('');
+}
+const ACHIEVEMENTS=[
+  {icon:'🚀',name:'First Steps',desc:'Complete your first lesson',req:us=>us.completedLessons.length>=1},
+  {icon:'📚',name:'Scholar',desc:'Complete 5 lessons',req:us=>us.completedLessons.length>=5},
+  {icon:'🎓',name:'Graduate',desc:'Complete all 15 lessons',req:us=>us.completedLessons.length>=15},
+  {icon:'💻',name:'Coder',desc:'Solve first question',req:us=>us.solvedQuestions.length>=1},
+  {icon:'🔟',name:'Ten Done',desc:'Solve 10 questions',req:us=>us.solvedQuestions.length>=10},
+  {icon:'💯',name:'Centurion',desc:'Solve 50 questions',req:us=>us.solvedQuestions.length>=50},
+  {icon:'⭐',name:'XP Hunter',desc:'Earn 500 XP',req:us=>(us.xp||0)>=500},
+  {icon:'🔥',name:'On Fire',desc:'Earn 1000 XP',req:us=>(us.xp||0)>=1000},
+];
+function buildAchievements(){
+  if(!currentUser)return;
+  const us=getUserState(currentUser.username);
+  document.getElementById('achievGrid').innerHTML=ACHIEVEMENTS.map(a=>{
+    const unlocked=a.req(us);
+    return `<div class="achiev-card ${unlocked?'unlocked':''}">
+      <div class="ach-icon">${a.icon}</div>
+      <div class="ach-name">${a.name}</div>
+      <div class="ach-desc">${a.desc}</div>
+    </div>`;
+  }).join('');
+}
+
+// ======================================================
+// USERS PAGE
+// ======================================================
+function refreshUsers(){
+  if(!currentUser||currentUser.role!=='instructor')return;
+  const tbody=document.getElementById('usersTableBody');
+  if(!tbody)return;
+  tbody.innerHTML=(appState.allUsers||[]).map(u=>{
+    const us=getUserState(u.username);
+    const sess=appState.sessions?.find(s=>s.username===u.username);
+    const online=sess?.online||false;
+    const prog=Math.round((us.completedLessons.length/15)*100);
+    return `<tr>
+      <td><strong style="color:var(--text)">${u.name}</strong><br><span style="font-size:12px">@${u.username}</span></td>
+      <td><span class="status-badge ${u.role==='instructor'?'badge-med':'badge-easy'}">${u.role}</span></td>
+      <td><span class="${online?'online-dot':'offline-dot'}"></span>${online?'Online':'Offline'}</td>
+      <td><div class="xp-bar"><div class="xp-fill" style="width:${prog}%;height:5px;border-radius:99px"></div><span style="font-size:12px;color:var(--muted);margin-left:6px">${prog}%</span></div></td>
+      <td>${us.solvedQuestions?.length||0}</td>
+      <td><span style="color:var(--yellow);font-weight:700">${us.xp||0} XP</span></td>
+      <td style="font-size:12px;color:var(--muted)">${us.lastLogin?new Date(us.lastLogin).toLocaleString():'Never'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ======================================================
+// INIT
+// ======================================================
+loadState();
+</script>
+</body>
+</html>
