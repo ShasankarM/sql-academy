@@ -1942,7 +1942,7 @@
       }
       const u = document.getElementById('loginUser').value.trim();
       const p = document.getElementById('loginPass').value.trim();
-      const email = u + '@sqlacademy.local';
+      const email = u + '@sqlacademy.app';
 
       const { data, error } = await supabase.auth.signInWithPassword({ email, password: p });
       if (error || !data.user) {
@@ -1973,7 +1973,7 @@
       const p = document.getElementById('regPass').value.trim();
       if (!name || !u || !p) { document.getElementById('regErr').textContent = 'All fields required.'; document.getElementById('regErr').style.display = 'block'; return; }
 
-      const email = u + '@sqlacademy.local';
+      const email = u + '@sqlacademy.app';
       const { data, error } = await supabase.auth.signUp({ email, password: p });
 
       if (error) {
