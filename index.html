@@ -1974,7 +1974,21 @@
       if (!name || !u || !p) { document.getElementById('regErr').textContent = 'All fields required.'; document.getElementById('regErr').style.display = 'block'; return; }
 
       const email = u + '@sqlacademy.app';
+      console.log('--- SUPABASE REGISTRATION DEBUG ---');
+      console.log('1. JSON.stringify(u):', JSON.stringify(u));
+      console.log('2. JSON.stringify(email):', JSON.stringify(email));
+      console.log('3. email.length:', email.length);
+      console.log('4. Char codes:', Array.from(u).map(c => c.charCodeAt(0)));
+      
       const { data, error } = await supabase.auth.signUp({ email, password: p });
+      if (error) {
+         console.log('5. Error fields:');
+         console.log('   error.message:', error.message);
+         console.log('   error.status:', error.status);
+         console.log('   error.code:', error.code);
+         console.log('   error.name:', error.name);
+      }
+      console.log('-----------------------------------');
 
       if (error) {
         document.getElementById('regErr').textContent = error.message;
