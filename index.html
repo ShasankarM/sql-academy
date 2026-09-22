@@ -1608,6 +1608,10 @@
           <input type="text" id="regName" placeholder="Your full name">
         </div>
         <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="regEmail" placeholder="you@example.com">
+        </div>
+        <div class="form-group">
           <label>Username</label>
           <input type="text" id="regUser" placeholder="Choose a username">
         </div>
@@ -1942,8 +1946,19 @@
       }
       const u = document.getElementById('loginUser').value.trim();
       const p = document.getElementById('loginPass').value.trim();
-      const email = u + '@sqlacademy.app';
 
+      // 1. Resolve username to email using our Postgres RPC function
+      const { data: emailData, error: rpcError } = await supabase.rpc('get_email_by_username', { p_username: u });
+
+      if (rpcError || !emailData || emailData.length === 0) {
+        document.getElementById('loginErr').textContent = 'Invalid username or password.';
+        document.getElementById('loginErr').style.display = 'block';
+        return;
+      }
+
+      const email = emailData[0].email;
+
+      // 2. Authenticate with resolved email
       const { data, error } = await supabase.auth.signInWithPassword({ email, password: p });
       if (error || !data.user) {
         document.getElementById('loginErr').textContent = error ? error.message : 'Invalid login';
@@ -1970,38 +1985,51 @@
       }
       const name = document.getElementById('regName').value.trim();
       const u = document.getElementById('regUser').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
       const p = document.getElementById('regPass').value.trim();
-      if (!name || !u || !p) { document.getElementById('regErr').textContent = 'All fields required.'; document.getElementById('regErr').style.display = 'block'; return; }
 
-      const email = u + '@sqlacademy.app';
-      console.log('--- SUPABASE REGISTRATION DEBUG ---');
-      console.log('1. JSON.stringify(u):', JSON.stringify(u));
-      console.log('2. JSON.stringify(email):', JSON.stringify(email));
-      console.log('3. email.length:', email.length);
-      console.log('4. Char codes:', Array.from(u).map(c => c.charCodeAt(0)));
-      
-      const { data, error } = await supabase.auth.signUp({ email, password: p });
-      if (error) {
-         console.log('5. Error fields:');
-         console.log('   error.message:', error.message);
-         console.log('   error.status:', error.status);
-         console.log('   error.code:', error.code);
-         console.log('   error.name:', error.name);
+      if (!name || !u || !email || !p) {
+        document.getElementById('regErr').textContent = 'All fields required.';
+        document.getElementById('regErr').style.display = 'block';
+        return;
       }
-      console.log('-----------------------------------');
+
+      // Automatically passes username and name to the database trigger via options.data
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password: p,
+        options: {
+          data: {
+            username: u,
+            name: name
+          }
+        }
+      });
 
       if (error) {
         document.getElementById('regErr').textContent = error.message;
         document.getElementById('regErr').style.display = 'block';
         return;
       }
+
       if (data.user) {
-        const role = (u === 'admin') ? 'instructor' : 'student';
-        await supabase.from('user_profiles').insert([{ id: data.user.id, username: u, name: name, role: role }]);
-        document.getElementById('regErr').textContent = 'Account created! Signing in...';
-        document.getElementById('regErr').style.color = 'var(--green)';
-        document.getElementById('regErr').style.display = 'block';
-        setTimeout(() => { document.getElementById('loginUser').value = u; document.getElementById('loginPass').value = p; switchAuthTab('login'); doLogin(); }, 800);
+        // Handle Email Confirmations if enabled
+        if (!data.session) {
+          document.getElementById('regErr').textContent = 'Registration successful! Please check your email inbox to confirm your account.';
+          document.getElementById('regErr').style.color = 'var(--green)';
+          document.getElementById('regErr').style.display = 'block';
+        } else {
+          document.getElementById('regErr').textContent = 'Account created! Signing in...';
+          document.getElementById('regErr').style.color = 'var(--green)';
+          document.getElementById('regErr').style.display = 'block';
+
+          setTimeout(() => {
+            document.getElementById('loginUser').value = u;
+            document.getElementById('loginPass').value = p;
+            switchAuthTab('login');
+            doLogin();
+          }, 800);
+        }
       }
     }
 
@@ -3106,7 +3134,7 @@ COMMIT;
       </div>
       <div class="qcard-body" id="qbody-${q.id.replace(':', '_')}">
         <div class="schema-note"><strong>📊 Table Schema:</strong> ${q.schema}</div>
-        
+
         <div class="sql-editor-container">
           <textarea id="editor-${q.id.replace(':', '_')}" class="sql-editor" placeholder="Write your SQL query here..."></textarea>
           <div class="sql-editor-toolbar">
@@ -3457,7 +3485,7 @@ COMMIT;
       const successEl = document.getElementById('success-' + safeId);
       errEl.style.display = 'none';
       resEl.style.display = 'none';
-      
+
       const userSql = document.getElementById('editor-' + safeId).value.trim();
       if (!userSql) return;
 
@@ -3498,7 +3526,7 @@ COMMIT;
         } else {
            expRes = expectedDb.exec(ansSql);
         }
-        
+
         if (JSON.stringify(userRes) === JSON.stringify(expRes)) {
            const us = getUserState(currentUser?.username || 'guest');
            if (!us.solvedQuestions?.includes(qObj.id)) {
@@ -3540,17 +3568,35 @@ COMMIT;
       await loadState();
 
       if (SUPABASE_URL !== 'REPLACE_WITH_YOUR_SUPABASE_URL') {
+        // 1. Check for existing session on page load
         const { data: { session } } = await supabase.auth.getSession();
         if (session && session.user) {
-          const { data: profile } = await supabase.from('user_profiles').select('*').eq('id', session.user.id).single();
-          if (profile) {
-            currentUser = { username: profile.username, name: profile.name, role: profile.role };
-            const u = profile.username;
-            appState.users[u].lastLogin = new Date().toISOString();
-            saveState();
-            launchApp();
-          }
+          await restoreUserSession(session.user);
         }
+
+        // 2. Listen for auth state changes
+        supabase.auth.onAuthStateChange(async (event, session) => {
+          if (event === 'SIGNED_IN' && session) {
+            // Already handled by doLogin, but good for cross-tab sync
+          } else if (event === 'SIGNED_OUT') {
+            if (currentUser) {
+               doLogout();
+            }
+          }
+        });
+      }
+    }
+
+    async function restoreUserSession(user) {
+      const { data: profile } = await supabase.from('user_profiles').select('*').eq('id', user.id).single();
+      if (profile) {
+        currentUser = { username: profile.username, name: profile.name, role: profile.role };
+        await loadState();
+        if (appState.users[profile.username]) {
+          appState.users[profile.username].lastLogin = new Date().toISOString();
+        }
+        saveState();
+        launchApp();
       }
     }
 
